@@ -3,1112 +3,1534 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DS Job Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<title>DS Jobs Pro — AI-Powered Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Cabinet+Grotesk:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0f1e;
-    --surface: #111827;
-    --surface2: #1a2235;
-    --border: #1e2d45;
-    --accent: #00e5ff;
-    --accent2: #7b61ff;
-    --accent3: #ff6b6b;
-    --accent4: #00c48c;
-    --text: #e2e8f0;
-    --muted: #64748b;
-    --card-glow: 0 0 24px rgba(0,229,255,0.06);
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    min-height: 100vh;
-    padding: 24px;
-  }
-
-  /* Grid noise texture overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: radial-gradient(circle at 20% 20%, rgba(0,229,255,0.04) 0%, transparent 50%),
-                      radial-gradient(circle at 80% 80%, rgba(123,97,255,0.04) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .container { max-width: 1300px; margin: 0 auto; position: relative; z-index: 1; }
-
-  header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 32px;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-
-  .logo-area h1 {
-    font-family: 'Space Mono', monospace;
-    font-size: clamp(22px, 4vw, 36px);
-    font-weight: 700;
-    letter-spacing: -1px;
-    color: #fff;
-  }
-
-  .logo-area h1 span { color: var(--accent); }
-
-  .logo-area p {
-    color: var(--muted);
-    font-size: 13px;
-    margin-top: 4px;
-    font-family: 'Space Mono', monospace;
-  }
-
-  .header-actions { display: flex; gap: 10px; align-items: center; }
-
-  .btn {
-    padding: 9px 20px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-family: 'Space Mono', monospace;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    transition: all 0.2s;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: #000;
-  }
-  .btn-primary:hover { background: #fff; transform: translateY(-1px); }
-
-  .btn-ghost {
-    background: transparent;
-    color: var(--accent);
-    border: 1px solid var(--border);
-  }
-  .btn-ghost:hover { border-color: var(--accent); background: rgba(0,229,255,0.06); }
-
-  /* Stats Row */
-  .stats-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-    margin-bottom: 28px;
-  }
-
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px;
-    box-shadow: var(--card-glow);
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.2s;
-  }
-
-  .stat-card:hover { transform: translateY(-2px); }
-
-  .stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    border-radius: 14px 14px 0 0;
-  }
-
-  .stat-card.c1::before { background: var(--accent); }
-  .stat-card.c2::before { background: var(--accent2); }
-  .stat-card.c3::before { background: var(--accent4); }
-  .stat-card.c4::before { background: var(--accent3); }
-  .stat-card.c5::before { background: #f59e0b; }
-
-  .stat-label {
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-family: 'Space Mono', monospace;
-    margin-bottom: 10px;
-  }
-
-  .stat-value {
-    font-size: 36px;
-    font-weight: 800;
-    line-height: 1;
-    margin-bottom: 6px;
-  }
-
-  .stat-sub {
-    font-size: 12px;
-    color: var(--muted);
-    font-family: 'Space Mono', monospace;
-  }
-
-  /* Main grid */
-  .main-grid {
-    display: grid;
-    grid-template-columns: 1fr 340px;
-    gap: 20px;
-    margin-bottom: 20px;
-  }
-
-  @media (max-width: 900px) {
-    .main-grid { grid-template-columns: 1fr; }
-  }
-
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 22px;
-    box-shadow: var(--card-glow);
-  }
-
-  .card-title {
-    font-size: 13px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--muted);
-    margin-bottom: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-family: 'Space Mono', monospace;
-  }
-
-  .card-title span { color: var(--accent); font-size: 11px; }
-
-  /* Job listings */
-  .filters {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-  }
-
-  .filter-btn {
-    padding: 5px 14px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    font-size: 12px;
-    cursor: pointer;
-    font-family: 'Space Mono', monospace;
-    transition: all 0.18s;
-  }
-
-  .filter-btn.active, .filter-btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: rgba(0,229,255,0.07);
-  }
-
-  .job-list { display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow-y: auto; }
-
-  .job-list::-webkit-scrollbar { width: 4px; }
-  .job-list::-webkit-scrollbar-track { background: transparent; }
-  .job-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-  .job-item {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 14px 16px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.18s;
-    position: relative;
-  }
-
-  .job-item:hover { border-color: var(--accent); background: rgba(0,229,255,0.03); }
-
-  .job-logo {
-    width: 40px; height: 40px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    flex-shrink: 0;
-    font-weight: 800;
-  }
-
-  .job-info { flex: 1; min-width: 0; }
-
-  .job-title {
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 3px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .job-meta {
-    font-size: 11px;
-    color: var(--muted);
-    font-family: 'Space Mono', monospace;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
-  .job-meta .dot { color: var(--border); }
-
-  .badge {
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-family: 'Space Mono', monospace;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .badge-remote { background: rgba(0,196,140,0.15); color: var(--accent4); }
-  .badge-canada { background: rgba(255,107,107,0.15); color: var(--accent3); }
-  .badge-hybrid { background: rgba(123,97,255,0.15); color: var(--accent2); }
-
-  .level-badge {
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-family: 'Space Mono', monospace;
-    font-weight: 700;
-  }
-
-  .level-junior { background: rgba(0,229,255,0.1); color: var(--accent); }
-  .level-mid { background: rgba(245,158,11,0.1); color: #f59e0b; }
-  .level-fresh { background: rgba(0,196,140,0.12); color: var(--accent4); }
-
-  .job-right { text-align: right; flex-shrink: 0; }
-  .job-salary { font-size: 13px; font-weight: 700; color: var(--accent4); font-family: 'Space Mono', monospace; }
-  .job-age { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; margin-top: 3px; }
-
-  /* Application status mini-bar */
-  .status-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .status-dot.applied { background: var(--accent); }
-  .status-dot.interview { background: #f59e0b; }
-  .status-dot.offered { background: var(--accent4); }
-  .status-dot.rejected { background: var(--accent3); }
-  .status-dot.saved { background: var(--muted); }
-
-  /* Sidebar - Application tracker */
-  .app-stats { display: flex; flex-direction: column; gap: 12px; }
-
-  .app-status-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .app-status-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-  }
-
-  .app-status-bar-wrap {
-    flex: 1;
-    margin: 0 12px;
-    background: var(--surface2);
-    border-radius: 4px;
-    height: 6px;
-    overflow: hidden;
-  }
-
-  .app-status-bar {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 1s ease;
-  }
-
-  .app-count {
-    font-family: 'Space Mono', monospace;
-    font-size: 13px;
-    font-weight: 700;
-    min-width: 24px;
-    text-align: right;
-  }
-
-  /* Donut chart */
-  .donut-wrap { display: flex; justify-content: center; margin: 16px 0 20px; }
-
-  svg.donut { width: 140px; height: 140px; }
-
-  /* Timeline */
-  .timeline { display: flex; flex-direction: column; gap: 0; max-height: 320px; overflow-y: auto; }
-
-  .timeline::-webkit-scrollbar { width: 4px; }
-  .timeline::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-  .tl-item {
-    display: flex;
-    gap: 12px;
-    position: relative;
-    padding-bottom: 16px;
-  }
-
-  .tl-item:last-child { padding-bottom: 0; }
-
-  .tl-line {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex-shrink: 0;
-  }
-
-  .tl-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    margin-top: 3px;
-  }
-
-  .tl-connector {
-    width: 1px;
-    flex: 1;
-    background: var(--border);
-    margin-top: 4px;
-    min-height: 20px;
-  }
-
-  .tl-item:last-child .tl-connector { display: none; }
-
-  .tl-body { flex: 1; }
-
-  .tl-date {
-    font-size: 10px;
-    color: var(--muted);
-    font-family: 'Space Mono', monospace;
-    margin-bottom: 3px;
-  }
-
-  .tl-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
-  .tl-company { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; }
-
-  /* Bottom row */
-  .bottom-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
-
-  @media (max-width: 700px) {
-    .bottom-row { grid-template-columns: 1fr; }
-  }
-
-  /* Bar chart */
-  .bar-chart { display: flex; align-items: flex-end; gap: 10px; height: 100px; margin-top: 8px; }
-
-  .bar-col { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
-
-  .bar {
-    width: 100%;
-    border-radius: 4px 4px 0 0;
-    transition: height 0.8s ease;
-    min-height: 4px;
-  }
-
-  .bar-label { font-size: 10px; color: var(--muted); font-family: 'Space Mono', monospace; text-align: center; }
-  .bar-val { font-size: 11px; font-weight: 700; font-family: 'Space Mono', monospace; }
-
-  /* Add job modal */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(10,15,30,0.85);
-    backdrop-filter: blur(4px);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .modal-overlay.open { display: flex; }
-
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 28px;
-    width: 480px;
-    max-width: 95vw;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.6);
-  }
-
-  .modal h2 {
-    font-size: 18px;
-    font-weight: 800;
-    margin-bottom: 20px;
-    font-family: 'Space Mono', monospace;
-  }
-
-  .form-group { margin-bottom: 16px; }
-
-  .form-group label {
-    display: block;
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-family: 'Space Mono', monospace;
-    margin-bottom: 7px;
-  }
-
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    font-size: 14px;
-    padding: 10px 14px;
-    outline: none;
-    transition: border-color 0.18s;
-  }
-
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus { border-color: var(--accent); }
-
-  .form-group textarea { resize: vertical; min-height: 70px; }
-
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
-
-  /* Chip group */
-  .chip-group { display: flex; gap: 8px; flex-wrap: wrap; }
-
-  .chip {
-    padding: 6px 14px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    font-size: 12px;
-    cursor: pointer;
-    font-family: 'Space Mono', monospace;
-    transition: all 0.15s;
-  }
-
-  .chip.selected {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: rgba(0,229,255,0.08);
-  }
-
-  .live-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: rgba(0,196,140,0.12);
-    color: var(--accent4);
-    font-size: 10px;
-    font-family: 'Space Mono', monospace;
-    padding: 3px 10px;
-    border-radius: 20px;
-    border: 1px solid rgba(0,196,140,0.25);
-  }
-
-  .live-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--accent4);
-    animation: pulse 1.5s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--muted);
-    font-family: 'Space Mono', monospace;
-    font-size: 12px;
-  }
-
-  .search-bar {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'Space Mono', monospace;
-    font-size: 13px;
-    padding: 10px 14px;
-    outline: none;
-    margin-bottom: 12px;
-    transition: border-color 0.18s;
-  }
-
-  .search-bar:focus { border-color: var(--accent); }
-  .search-bar::placeholder { color: var(--muted); }
-
-  option { background: var(--surface); }
+:root {
+  --bg: #06080f;
+  --s1: #0d1117;
+  --s2: #161b27;
+  --s3: #1c2333;
+  --border: #21283a;
+  --border2: #2d3748;
+  --text: #cdd5e0;
+  --muted: #4a5568;
+  --muted2: #6b7a94;
+  --cyan: #38bdf8;
+  --green: #34d399;
+  --amber: #fbbf24;
+  --red: #f87171;
+  --purple: #a78bfa;
+  --pink: #f472b6;
+  --white: #f0f4f8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Cabinet Grotesk',sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* Animated background grid */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px);
+  background-size:48px 48px;
+  pointer-events:none;z-index:0;
+}
+body::after{
+  content:'';
+  position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 600px 400px at 10% 20%, rgba(56,189,248,0.05) 0%, transparent 70%),
+    radial-gradient(ellipse 500px 400px at 90% 80%, rgba(167,139,250,0.04) 0%, transparent 70%);
+  pointer-events:none;z-index:0;
+}
+
+.app{position:relative;z-index:1;display:flex;height:100vh;overflow:hidden;}
+
+/* ── SIDEBAR ─────────────────────────── */
+.sidebar{
+  width:220px;flex-shrink:0;
+  background:var(--s1);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  padding:20px 0;
+  transition:width 0.3s;
+}
+
+.sidebar-logo{
+  padding:0 20px 24px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:16px;
+}
+.sidebar-logo h1{
+  font-size:20px;font-weight:900;
+  letter-spacing:-0.5px;color:var(--white);
+  line-height:1;
+}
+.sidebar-logo h1 em{color:var(--cyan);font-style:normal;}
+.sidebar-logo p{
+  font-family:'DM Mono',monospace;
+  font-size:9px;color:var(--muted2);
+  margin-top:5px;letter-spacing:1.5px;text-transform:uppercase;
+}
+
+.nav-section{padding:0 12px;margin-bottom:8px;}
+.nav-label{
+  font-size:9px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1.5px;
+  font-family:'DM Mono',monospace;
+  padding:0 8px;margin-bottom:6px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 10px;border-radius:8px;
+  cursor:pointer;transition:all 0.15s;
+  font-size:13px;font-weight:500;color:var(--muted2);
+  border:1px solid transparent;
+  margin-bottom:2px;
+}
+.nav-item:hover{background:var(--s2);color:var(--text);}
+.nav-item.active{
+  background:rgba(56,189,248,0.08);
+  color:var(--cyan);
+  border-color:rgba(56,189,248,0.15);
+}
+.nav-item .icon{font-size:15px;width:20px;text-align:center;}
+.nav-badge{
+  margin-left:auto;
+  background:var(--cyan);color:#000;
+  font-size:10px;font-weight:700;
+  padding:1px 7px;border-radius:10px;
+  font-family:'DM Mono',monospace;
+}
+
+.sidebar-bottom{margin-top:auto;padding:16px 12px 0;border-top:1px solid var(--border);}
+
+/* ── MAIN ─────────────────────────────── */
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+
+.main::-webkit-scrollbar{width:5px;}
+.main::-webkit-scrollbar-track{background:transparent;}
+.main::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+
+/* ── TOPBAR ───────────────────────────── */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:rgba(6,8,15,0.85);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  padding:14px 28px;
+  display:flex;align-items:center;gap:16px;
+}
+.topbar-title{font-size:16px;font-weight:700;color:var(--white);}
+.topbar-sub{font-size:12px;color:var(--muted2);font-family:'DM Mono',monospace;margin-top:1px;}
+.topbar-right{margin-left:auto;display:flex;gap:10px;align-items:center;}
+
+.btn{
+  padding:8px 18px;border-radius:8px;border:none;
+  cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;
+  font-size:13px;font-weight:700;transition:all 0.18s;
+  white-space:nowrap;
+}
+.btn-primary{background:var(--cyan);color:#000;}
+.btn-primary:hover{background:#7dd3fc;transform:translateY(-1px);}
+.btn-ai{
+  background:linear-gradient(135deg,#a78bfa,#38bdf8);
+  color:#000;font-weight:800;
+}
+.btn-ai:hover{opacity:0.9;transform:translateY(-1px);}
+.btn-ghost{
+  background:transparent;color:var(--muted2);
+  border:1px solid var(--border2);
+}
+.btn-ghost:hover{border-color:var(--cyan);color:var(--cyan);}
+
+.pulse-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--green);
+  animation:pulse 2s infinite;
+  display:inline-block;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(0.8);}}
+
+/* ── CONTENT ──────────────────────────── */
+.content{padding:24px 28px;flex:1;}
+
+/* ── PAGE SECTIONS ────────────────────── */
+.page{display:none;}
+.page.active{display:block;}
+
+/* ── STAT CARDS ───────────────────────── */
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:14px;margin-bottom:24px;
+}
+@media(max-width:1100px){.stats-grid{grid-template-columns:repeat(3,1fr);}}
+
+.stat-card{
+  background:var(--s1);
+  border:1px solid var(--border);
+  border-radius:14px;padding:18px 20px;
+  position:relative;overflow:hidden;
+  transition:transform 0.2s,border-color 0.2s;
+  cursor:default;
+}
+.stat-card:hover{transform:translateY(-2px);border-color:var(--border2);}
+.stat-card::after{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:2px;
+}
+.stat-card.c-cyan::after{background:var(--cyan);}
+.stat-card.c-green::after{background:var(--green);}
+.stat-card.c-amber::after{background:var(--amber);}
+.stat-card.c-red::after{background:var(--red);}
+.stat-card.c-purple::after{background:var(--purple);}
+
+.stat-icon{font-size:22px;margin-bottom:10px;}
+.stat-val{font-size:32px;font-weight:900;line-height:1;color:var(--white);margin-bottom:4px;}
+.stat-label{font-size:11px;color:var(--muted2);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:1px;}
+.stat-delta{font-size:11px;margin-top:6px;font-family:'DM Mono',monospace;}
+.stat-delta.up{color:var(--green);}
+.stat-delta.neutral{color:var(--muted2);}
+
+/* ── GRID LAYOUTS ─────────────────────── */
+.two-col{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-bottom:18px;}
+.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:18px;}
+@media(max-width:1000px){.two-col,.three-col{grid-template-columns:1fr;}}
+
+.card{
+  background:var(--s1);
+  border:1px solid var(--border);
+  border-radius:14px;padding:20px;
+}
+.card-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;
+}
+.card-title{
+  font-size:12px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--muted2);
+  font-family:'DM Mono',monospace;
+}
+.card-badge{
+  font-size:10px;font-family:'DM Mono',monospace;
+  padding:3px 10px;border-radius:20px;
+  background:rgba(56,189,248,0.1);color:var(--cyan);
+  border:1px solid rgba(56,189,248,0.2);
+}
+
+/* ── JOBS LIST ────────────────────────── */
+.job-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.ftag{
+  padding:5px 14px;border-radius:20px;
+  border:1px solid var(--border2);
+  background:transparent;color:var(--muted2);
+  font-size:12px;cursor:pointer;
+  font-family:'DM Mono',monospace;
+  transition:all 0.15s;
+}
+.ftag:hover,.ftag.on{
+  border-color:var(--cyan);color:var(--cyan);
+  background:rgba(56,189,248,0.07);
+}
+
+.search-wrap{position:relative;margin-bottom:12px;}
+.search-wrap input{
+  width:100%;background:var(--s2);
+  border:1px solid var(--border2);
+  border-radius:10px;color:var(--text);
+  font-family:'Cabinet Grotesk',sans-serif;font-size:14px;
+  padding:11px 16px 11px 40px;
+  outline:none;transition:border-color 0.18s;
+}
+.search-wrap input:focus{border-color:var(--cyan);}
+.search-wrap input::placeholder{color:var(--muted);}
+.search-icon{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  color:var(--muted);font-size:15px;pointer-events:none;
+}
+
+.job-list{display:flex;flex-direction:column;gap:8px;max-height:460px;overflow-y:auto;padding-right:4px;}
+.job-list::-webkit-scrollbar{width:3px;}
+.job-list::-webkit-scrollbar-thumb{background:var(--border2);}
+
+.job-card{
+  display:flex;gap:14px;align-items:center;
+  padding:14px 16px;
+  background:var(--s2);
+  border:1px solid var(--border);
+  border-radius:11px;
+  cursor:pointer;transition:all 0.18s;
+  position:relative;
+}
+.job-card:hover{border-color:var(--cyan);background:rgba(56,189,248,0.03);}
+.job-card.applied-mark{border-left:3px solid var(--green);}
+
+.j-logo{
+  width:42px;height:42px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:900;flex-shrink:0;
+  font-family:'DM Mono',monospace;
+}
+.j-body{flex:1;min-width:0;}
+.j-title{font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.j-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.j-company{font-size:12px;color:var(--muted2);font-family:'DM Mono',monospace;}
+.j-sep{color:var(--border2);}
+.chip{
+  font-size:10px;padding:2px 8px;border-radius:4px;
+  font-family:'DM Mono',monospace;font-weight:500;
+}
+.chip-remote{background:rgba(52,211,153,0.12);color:var(--green);}
+.chip-canada{background:rgba(248,113,113,0.12);color:var(--red);}
+.chip-hybrid{background:rgba(167,139,250,0.12);color:var(--purple);}
+.chip-junior{background:rgba(56,189,248,0.1);color:var(--cyan);}
+.chip-fresh{background:rgba(52,211,153,0.1);color:var(--green);}
+.chip-mid{background:rgba(251,191,36,0.1);color:var(--amber);}
+.chip-new{background:rgba(244,114,182,0.12);color:var(--pink);}
+
+.j-right{text-align:right;flex-shrink:0;}
+.j-salary{font-size:12px;font-weight:700;color:var(--green);font-family:'DM Mono',monospace;}
+.j-age{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:3px;}
+.j-applied-tag{
+  font-size:9px;font-family:'DM Mono',monospace;
+  background:rgba(52,211,153,0.12);color:var(--green);
+  padding:2px 7px;border-radius:4px;margin-top:4px;
+}
+
+/* ── STATUS TRACKER ───────────────────── */
+.status-rows{display:flex;flex-direction:column;gap:14px;}
+.status-row{display:flex;align-items:center;gap:12px;}
+.s-label{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;width:90px;flex-shrink:0;}
+.s-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.s-bar-wrap{flex:1;background:var(--s3);border-radius:6px;height:7px;overflow:hidden;}
+.s-bar{height:100%;border-radius:6px;transition:width 1.2s cubic-bezier(0.34,1.56,0.64,1);}
+.s-count{font-family:'DM Mono',monospace;font-size:13px;font-weight:700;min-width:28px;text-align:right;}
+
+/* Radial ring */
+.ring-wrap{display:flex;justify-content:center;margin:10px 0 18px;}
+.ring-svg{width:130px;height:130px;}
+
+/* ── TIMELINE ─────────────────────────── */
+.timeline{display:flex;flex-direction:column;max-height:340px;overflow-y:auto;padding-right:4px;}
+.timeline::-webkit-scrollbar{width:3px;}
+.timeline::-webkit-scrollbar-thumb{background:var(--border2);}
+
+.tl-entry{display:flex;gap:12px;padding-bottom:18px;position:relative;}
+.tl-entry:last-child{padding-bottom:0;}
+.tl-spine{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+.tl-node{width:10px;height:10px;border-radius:50%;margin-top:4px;flex-shrink:0;border:2px solid var(--bg);}
+.tl-line2{flex:1;width:1px;background:var(--border);margin-top:4px;min-height:18px;}
+.tl-entry:last-child .tl-line2{display:none;}
+.tl-content{flex:1;}
+.tl-when{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:3px;}
+.tl-job{font-size:13px;font-weight:700;color:var(--white);margin-bottom:2px;}
+.tl-where{font-size:11px;color:var(--muted2);font-family:'DM Mono',monospace;}
+.tl-status-tag{
+  display:inline-block;margin-top:5px;
+  font-size:9px;font-family:'DM Mono',monospace;
+  padding:2px 8px;border-radius:4px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.5px;
+}
+
+/* ── BAR CHARTS ───────────────────────── */
+.bar-chart{display:flex;align-items:flex-end;gap:10px;height:110px;padding-top:8px;}
+.bc-col{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;}
+.bc-bar{width:100%;border-radius:6px 6px 0 0;min-height:4px;transition:height 1s ease;}
+.bc-val{font-size:11px;font-weight:700;font-family:'DM Mono',monospace;}
+.bc-lbl{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;text-align:center;}
+
+/* ── AI CHAT ──────────────────────────── */
+.ai-panel{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:14px;overflow:hidden;display:flex;flex-direction:column;
+  height:500px;
+}
+.ai-header{
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,rgba(167,139,250,0.05),rgba(56,189,248,0.05));
+}
+.ai-avatar{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,var(--purple),var(--cyan));
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;
+}
+.ai-name{font-size:14px;font-weight:800;color:var(--white);}
+.ai-sub{font-size:11px;color:var(--muted2);font-family:'DM Mono',monospace;}
+
+.ai-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;}
+.ai-messages::-webkit-scrollbar{width:3px;}
+.ai-messages::-webkit-scrollbar-thumb{background:var(--border2);}
+
+.msg{max-width:88%;padding:12px 15px;border-radius:12px;font-size:13px;line-height:1.6;}
+.msg.user{
+  align-self:flex-end;
+  background:rgba(56,189,248,0.12);
+  border:1px solid rgba(56,189,248,0.2);
+  color:var(--cyan);border-radius:12px 12px 4px 12px;
+}
+.msg.ai{
+  align-self:flex-start;
+  background:var(--s2);border:1px solid var(--border);
+  color:var(--text);border-radius:12px 12px 12px 4px;
+}
+.msg.ai strong{color:var(--cyan);}
+.msg.ai em{color:var(--amber);font-style:normal;}
+.msg.ai .tag{
+  display:inline-block;background:rgba(52,211,153,0.1);
+  color:var(--green);border-radius:4px;
+  padding:0 6px;font-family:'DM Mono',monospace;font-size:11px;
+}
+.msg-typing{display:flex;gap:4px;align-items:center;padding:14px 18px;}
+.typing-dot{width:6px;height:6px;background:var(--muted2);border-radius:50%;animation:blink 1.2s infinite;}
+.typing-dot:nth-child(2){animation-delay:0.2s;}
+.typing-dot:nth-child(3){animation-delay:0.4s;}
+@keyframes blink{0%,80%,100%{opacity:0.2;}40%{opacity:1;}}
+
+.ai-input-wrap{
+  border-top:1px solid var(--border);padding:12px 16px;
+  display:flex;gap:10px;background:var(--s1);
+}
+.ai-input{
+  flex:1;background:var(--s2);border:1px solid var(--border2);
+  border-radius:10px;color:var(--text);
+  font-family:'Cabinet Grotesk',sans-serif;font-size:13px;
+  padding:10px 14px;outline:none;resize:none;
+  transition:border-color 0.18s;
+  max-height:80px;overflow-y:auto;
+}
+.ai-input:focus{border-color:var(--cyan);}
+.ai-input::placeholder{color:var(--muted);}
+.ai-send{
+  width:40px;height:40px;border-radius:10px;border:none;
+  background:var(--cyan);color:#000;font-size:16px;
+  cursor:pointer;flex-shrink:0;transition:all 0.18s;
+  display:flex;align-items:center;justify-content:center;
+}
+.ai-send:hover{background:#7dd3fc;}
+.ai-send:disabled{opacity:0.4;cursor:not-allowed;}
+
+.quick-prompts{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 10px;}
+.qp{
+  padding:5px 12px;border-radius:20px;
+  border:1px solid var(--border2);background:transparent;
+  color:var(--muted2);font-size:11px;cursor:pointer;
+  font-family:'DM Mono',monospace;transition:all 0.15s;
+}
+.qp:hover{border-color:var(--purple);color:var(--purple);}
+
+/* ── JOB DETAIL MODAL ─────────────────── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(6,8,15,0.88);
+  backdrop-filter:blur(8px);
+  z-index:200;align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:var(--s1);border:1px solid var(--border2);
+  border-radius:18px;width:520px;max-width:95vw;
+  max-height:90vh;overflow-y:auto;
+  box-shadow:0 32px 80px rgba(0,0,0,0.7);
+}
+.modal::-webkit-scrollbar{width:3px;}
+.modal::-webkit-scrollbar-thumb{background:var(--border2);}
+
+.modal-head{
+  padding:24px 24px 16px;
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;background:var(--s1);z-index:1;
+}
+.modal-head h2{font-size:18px;font-weight:900;color:var(--white);margin-bottom:4px;}
+.modal-head p{font-size:12px;color:var(--muted2);font-family:'DM Mono',monospace;}
+.modal-close{
+  position:absolute;top:20px;right:20px;
+  width:32px;height:32px;border-radius:8px;border:1px solid var(--border2);
+  background:transparent;color:var(--muted2);font-size:16px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;
+}
+.modal-close:hover{border-color:var(--red);color:var(--red);}
+
+.modal-body{padding:20px 24px;}
+.form-group{margin-bottom:16px;}
+.form-label{
+  display:block;font-size:10px;color:var(--muted2);
+  text-transform:uppercase;letter-spacing:1.5px;
+  font-family:'DM Mono',monospace;margin-bottom:7px;
+}
+.form-input,.form-select,.form-textarea{
+  width:100%;background:var(--s2);border:1px solid var(--border2);
+  border-radius:9px;color:var(--text);
+  font-family:'Cabinet Grotesk',sans-serif;font-size:14px;
+  padding:11px 14px;outline:none;transition:border-color 0.18s;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--cyan);}
+.form-textarea{resize:vertical;min-height:80px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+option{background:var(--s1);}
+
+.chip-group{display:flex;gap:8px;flex-wrap:wrap;}
+.chip-toggle{
+  padding:6px 15px;border-radius:20px;
+  border:1px solid var(--border2);background:transparent;
+  color:var(--muted2);font-size:12px;cursor:pointer;
+  font-family:'DM Mono',monospace;transition:all 0.15s;
+}
+.chip-toggle.sel{border-color:var(--cyan);color:var(--cyan);background:rgba(56,189,248,0.08);}
+
+.modal-foot{
+  padding:16px 24px 24px;
+  display:flex;gap:10px;
+}
+
+/* ── ANALYTICS PAGE ───────────────────── */
+.heatmap{display:grid;grid-template-columns:repeat(26,1fr);gap:3px;margin-top:12px;}
+.hm-cell{
+  aspect-ratio:1;border-radius:2px;
+  background:var(--s3);transition:background 0.3s;
+  cursor:default;
+}
+.hm-cell.l1{background:rgba(56,189,248,0.2);}
+.hm-cell.l2{background:rgba(56,189,248,0.45);}
+.hm-cell.l3{background:rgba(56,189,248,0.7);}
+.hm-cell.l4{background:var(--cyan);}
+.hm-labels{display:flex;justify-content:space-between;margin-top:6px;}
+.hm-lbl{font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* ── GOALS ────────────────────────────── */
+.goal-list{display:flex;flex-direction:column;gap:12px;}
+.goal-item{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:10px;padding:14px 16px;
+}
+.goal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.goal-name{font-size:13px;font-weight:700;color:var(--white);}
+.goal-pct{font-size:12px;font-family:'DM Mono',monospace;}
+.goal-bar-wrap{background:var(--s3);border-radius:4px;height:5px;}
+.goal-bar{height:100%;border-radius:4px;transition:width 1.2s ease;}
+
+/* ── EMPTY ────────────────────────────── */
+.empty{
+  text-align:center;padding:40px 20px;
+  color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;
+}
+.empty-icon{font-size:32px;margin-bottom:10px;}
+
+/* ── ANIMATIONS ───────────────────────── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.fade-in{animation:fadeUp 0.4s ease both;}
+.fade-in-2{animation:fadeUp 0.4s 0.1s ease both;}
+.fade-in-3{animation:fadeUp 0.4s 0.2s ease both;}
+
+/* ── TABS ─────────────────────────────── */
+.tab-bar{display:flex;gap:4px;background:var(--s2);border-radius:10px;padding:4px;margin-bottom:20px;}
+.tab{
+  flex:1;padding:8px 12px;border-radius:7px;border:none;
+  background:transparent;color:var(--muted2);
+  font-family:'Cabinet Grotesk',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all 0.18s;text-align:center;
+}
+.tab.active{background:var(--s1);color:var(--white);box-shadow:0 1px 4px rgba(0,0,0,0.3);}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:24px;right:24px;z-index:999;
+  background:var(--s2);border:1px solid var(--green);
+  color:var(--green);font-family:'DM Mono',monospace;font-size:13px;
+  padding:12px 20px;border-radius:10px;
+  transform:translateY(60px);opacity:0;
+  transition:all 0.3s;pointer-events:none;
+}
+.toast.show{transform:translateY(0);opacity:1;}
 </style>
 </head>
 <body>
-<div class="container">
-  <header>
-    <div class="logo-area">
-      <h1>DS<span>.</span>JOBS</h1>
-      <p>// Data Science Job Tracker — Canada + Remote</p>
-    </div>
-    <div class="header-actions">
-      <div class="live-badge"><div class="live-dot"></div> LIVE TRACKING</div>
-      <button class="btn btn-ghost" onclick="openModal()">+ Log Application</button>
-      <button class="btn btn-primary" onclick="fetchNewJobs()">Refresh Jobs</button>
-    </div>
-  </header>
+<div class="app">
 
-  <!-- Stats row -->
-  <div class="stats-row" id="statsRow">
-    <div class="stat-card c1">
-      <div class="stat-label">Jobs Available</div>
-      <div class="stat-value" id="statAvailable" style="color:var(--accent)">—</div>
-      <div class="stat-sub">Canada + Remote</div>
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <h1>DS<em>.</em>PRO</h1>
+    <p>// AI Job Tracker</p>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Dashboard</div>
+    <div class="nav-item active" onclick="showPage('dashboard',this)">
+      <span class="icon">📊</span> Overview
     </div>
-    <div class="stat-card c2">
-      <div class="stat-label">Applied</div>
-      <div class="stat-value" id="statApplied" style="color:var(--accent2)">0</div>
-      <div class="stat-sub">Total applications</div>
+    <div class="nav-item" onclick="showPage('jobs',this)">
+      <span class="icon">💼</span> Browse Jobs
+      <span class="nav-badge" id="jobCountBadge">15</span>
     </div>
-    <div class="stat-card c3">
-      <div class="stat-label">Interviews</div>
-      <div class="stat-value" id="statInterview" style="color:var(--accent4)">0</div>
-      <div class="stat-sub">In progress</div>
+    <div class="nav-item" onclick="showPage('tracker',this)">
+      <span class="icon">📋</span> My Applications
     </div>
-    <div class="stat-card c4">
-      <div class="stat-label">Response Rate</div>
-      <div class="stat-value" id="statRate" style="color:var(--accent3)">0%</div>
-      <div class="stat-sub">Applications responded</div>
-    </div>
-    <div class="stat-card c5">
-      <div class="stat-label">This Week</div>
-      <div class="stat-value" id="statWeek" style="color:#f59e0b">0</div>
-      <div class="stat-sub">New applications</div>
+    <div class="nav-item" onclick="showPage('analytics',this)">
+      <span class="icon">📈</span> Analytics
     </div>
   </div>
 
-  <!-- Main Grid -->
-  <div class="main-grid">
-    <!-- Job Listings -->
-    <div class="card">
-      <div class="card-title">
-        Available Jobs <span id="jobCount">Loading...</span>
-      </div>
-      <input type="text" class="search-bar" placeholder="Search jobs, companies, roles..." id="searchBar" oninput="filterJobs()">
-      <div class="filters" id="filterBar">
-        <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
-        <button class="filter-btn" onclick="setFilter('remote', this)">🌐 Remote</button>
-        <button class="filter-btn" onclick="setFilter('canada', this)">🍁 Canada</button>
-        <button class="filter-btn" onclick="setFilter('junior', this)">Junior</button>
-        <button class="filter-btn" onclick="setFilter('fresh', this)">Fresher</button>
-        <button class="filter-btn" onclick="setFilter('analyst', this)">Analyst</button>
-        <button class="filter-btn" onclick="setFilter('engineer', this)">Engineer</button>
-      </div>
-      <div class="job-list" id="jobList">
-        <div class="empty-state">⟳ Fetching latest jobs...</div>
-      </div>
+  <div class="nav-section" style="margin-top:8px;">
+    <div class="nav-label">Tools</div>
+    <div class="nav-item" onclick="showPage('ai',this)">
+      <span class="icon">🤖</span> AI Assistant
     </div>
-
-    <!-- Sidebar -->
-    <div style="display:flex;flex-direction:column;gap:16px;">
-      <!-- Application Status -->
-      <div class="card">
-        <div class="card-title">My Applications</div>
-        <!-- Donut -->
-        <div class="donut-wrap">
-          <svg class="donut" viewBox="0 0 140 140">
-            <circle cx="70" cy="70" r="54" fill="none" stroke="#1a2235" stroke-width="16"/>
-            <circle id="donut-applied" cx="70" cy="70" r="54" fill="none" stroke="#00e5ff" stroke-width="16"
-              stroke-dasharray="0 339" stroke-linecap="round" transform="rotate(-90 70 70)" style="transition:stroke-dasharray 1s ease"/>
-            <circle id="donut-interview" cx="70" cy="70" r="54" fill="none" stroke="#f59e0b" stroke-width="16"
-              stroke-dasharray="0 339" stroke-dashoffset="0" stroke-linecap="round" transform="rotate(-90 70 70)" style="transition:all 1s ease"/>
-            <circle id="donut-offered" cx="70" cy="70" r="54" fill="none" stroke="#00c48c" stroke-width="16"
-              stroke-dasharray="0 339" stroke-linecap="round" transform="rotate(-90 70 70)" style="transition:all 1s ease"/>
-            <text x="70" y="66" text-anchor="middle" fill="#e2e8f0" font-family="Space Mono" font-size="22" font-weight="700" id="donutTotal">0</text>
-            <text x="70" y="82" text-anchor="middle" fill="#64748b" font-family="Space Mono" font-size="9">TOTAL</text>
-          </svg>
-        </div>
-        <div class="app-stats" id="appStats">
-          <div class="app-status-row">
-            <div class="app-status-label"><div class="status-dot applied"></div> Applied</div>
-            <div class="app-status-bar-wrap"><div class="app-status-bar" id="bar-applied" style="background:var(--accent);width:0%"></div></div>
-            <div class="app-count" style="color:var(--accent)" id="cnt-applied">0</div>
-          </div>
-          <div class="app-status-row">
-            <div class="app-status-label"><div class="status-dot interview"></div> Interview</div>
-            <div class="app-status-bar-wrap"><div class="app-status-bar" id="bar-interview" style="background:#f59e0b;width:0%"></div></div>
-            <div class="app-count" style="color:#f59e0b" id="cnt-interview">0</div>
-          </div>
-          <div class="app-status-row">
-            <div class="app-status-label"><div class="status-dot offered"></div> Offered</div>
-            <div class="app-status-bar-wrap"><div class="app-status-bar" id="bar-offered" style="background:var(--accent4);width:0%"></div></div>
-            <div class="app-count" style="color:var(--accent4)" id="cnt-offered">0</div>
-          </div>
-          <div class="app-status-row">
-            <div class="app-status-label"><div class="status-dot rejected"></div> Rejected</div>
-            <div class="app-status-bar-wrap"><div class="app-status-bar" id="bar-rejected" style="background:var(--accent3);width:0%"></div></div>
-            <div class="app-count" style="color:var(--accent3)" id="cnt-rejected">0</div>
-          </div>
-          <div class="app-status-row">
-            <div class="app-status-label"><div class="status-dot saved"></div> Saved</div>
-            <div class="app-status-bar-wrap"><div class="app-status-bar" id="bar-saved" style="background:var(--muted);width:0%"></div></div>
-            <div class="app-count" style="color:var(--muted)" id="cnt-saved">0</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Timeline -->
-      <div class="card">
-        <div class="card-title">Application Timeline <span>RECENT</span></div>
-        <div class="timeline" id="timeline">
-          <div class="empty-state">No applications logged yet</div>
-        </div>
-      </div>
+    <div class="nav-item" onclick="showPage('goals',this)">
+      <span class="icon">🎯</span> Goals
     </div>
   </div>
 
-  <!-- Bottom Row: Charts -->
-  <div class="bottom-row">
-    <div class="card">
-      <div class="card-title">Applications by Role <span>THIS MONTH</span></div>
-      <div class="bar-chart" id="roleChart">
-        <div class="bar-col"><div class="bar-val" style="color:var(--accent)">0</div><div class="bar" style="height:4px;background:var(--accent)"></div><div class="bar-label">Analyst</div></div>
-        <div class="bar-col"><div class="bar-val" style="color:var(--accent2)">0</div><div class="bar" style="height:4px;background:var(--accent2)"></div><div class="bar-label">Engineer</div></div>
-        <div class="bar-col"><div class="bar-val" style="color:var(--accent4)">0</div><div class="bar" style="height:4px;background:var(--accent4)"></div><div class="bar-label">Scientist</div></div>
-        <div class="bar-col"><div class="bar-val" style="color:#f59e0b">0</div><div class="bar" style="height:4px;background:#f59e0b"></div><div class="bar-label">ML/AI</div></div>
-        <div class="bar-col"><div class="bar-val" style="color:var(--accent3)">0</div><div class="bar" style="height:4px;background:var(--accent3)"></div><div class="bar-label">Other</div></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">Applications by Week <span>ACTIVITY</span></div>
-      <div class="bar-chart" id="weekChart">
-        <div class="bar-col"><div class="bar-val" style="color:var(--accent)">0</div><div class="bar" style="height:4px;background:linear-gradient(to top, var(--accent2), var(--accent))"></div><div class="bar-label">Wk1</div></div>
-        <div class="bar-col"><div class="bar-val" style="color:var(--accent)">0</div><div class="bar" style="height:4px;background:linear-gradient(to top, var(--accent2), var(--accent))"></div><div class="bar-label">Wk2</div></div>
-        <div class="bar-col"><div class="bar-val" style="color:var(--accent)">0</div><div class="bar" style="height:4px;background:linear-gradient(to top, var(--accent2), var(--accent))"></div><div class="bar-label">Wk3</div></div>
-        <div class="bar-col"><div class="bar-val" style="color:var(--accent)">0</div><div class="bar" style="height:4px;background:linear-gradient(to top, var(--accent2), var(--accent))"></div><div class="bar-label">Wk4</div></div>
-      </div>
+  <div class="sidebar-bottom">
+    <div class="nav-item" onclick="openModal()">
+      <span class="icon">➕</span> Log Application
     </div>
   </div>
-</div>
+</nav>
 
-<!-- Modal -->
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="pageTitle">Overview</div>
+      <div class="topbar-sub" id="pageSub">Data Science Jobs — Canada & Remote</div>
+    </div>
+    <div class="topbar-right">
+      <span style="font-size:12px;color:var(--muted2);font-family:'DM Mono',monospace;"><span class="pulse-dot"></span> Live</span>
+      <button class="btn btn-ghost" onclick="fetchJobs()">↻ Refresh</button>
+      <button class="btn btn-ai" onclick="showPage('ai',document.querySelector('.nav-item:nth-child(2)'))">✦ Ask AI</button>
+      <button class="btn btn-primary" onclick="openModal()">+ Log Job</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ DASHBOARD PAGE ══ -->
+    <div id="page-dashboard" class="page active">
+      <div class="stats-grid fade-in">
+        <div class="stat-card c-cyan">
+          <div class="stat-icon">💼</div>
+          <div class="stat-val" id="s-avail">15</div>
+          <div class="stat-label">Jobs Available</div>
+          <div class="stat-delta up" id="s-avail-d">↑ Canada + Remote</div>
+        </div>
+        <div class="stat-card c-green">
+          <div class="stat-icon">📨</div>
+          <div class="stat-val" id="s-total">0</div>
+          <div class="stat-label">Applied Total</div>
+          <div class="stat-delta neutral" id="s-total-d">Start logging!</div>
+        </div>
+        <div class="stat-card c-amber">
+          <div class="stat-icon">🎤</div>
+          <div class="stat-val" id="s-inter">0</div>
+          <div class="stat-label">Interviews</div>
+          <div class="stat-delta neutral">Active pipeline</div>
+        </div>
+        <div class="stat-card c-red">
+          <div class="stat-icon">📊</div>
+          <div class="stat-val" id="s-rate">0%</div>
+          <div class="stat-label">Response Rate</div>
+          <div class="stat-delta neutral">Industry avg ~8%</div>
+        </div>
+        <div class="stat-card c-purple">
+          <div class="stat-icon">📅</div>
+          <div class="stat-val" id="s-week">0</div>
+          <div class="stat-label">This Week</div>
+          <div class="stat-delta neutral">Goal: 5/week</div>
+        </div>
+      </div>
+
+      <div class="two-col fade-in-2">
+        <!-- Recent Jobs -->
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title">Latest Jobs</span>
+            <span class="card-badge" id="listCount">15 found</span>
+          </div>
+          <div class="job-filters" id="dashFilters">
+            <button class="ftag on" onclick="setFilter('all',this)">All</button>
+            <button class="ftag" onclick="setFilter('remote',this)">🌐 Remote</button>
+            <button class="ftag" onclick="setFilter('canada',this)">🍁 Canada</button>
+            <button class="ftag" onclick="setFilter('junior',this)">Junior</button>
+            <button class="ftag" onclick="setFilter('fresh',this)">Fresher</button>
+            <button class="ftag" onclick="setFilter('analyst',this)">Analyst</button>
+            <button class="ftag" onclick="setFilter('engineer',this)">Engineer</button>
+          </div>
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" placeholder="Search jobs, companies, skills..." id="jobSearch" oninput="renderJobs()">
+          </div>
+          <div class="job-list" id="jobListMain"></div>
+        </div>
+
+        <!-- Status + Timeline -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">Application Status</span>
+            </div>
+            <div class="ring-wrap">
+              <svg class="ring-svg" viewBox="0 0 130 130">
+                <circle cx="65" cy="65" r="52" fill="none" stroke="#1c2333" stroke-width="14"/>
+                <circle id="ring-a" cx="65" cy="65" r="52" fill="none" stroke="#38bdf8" stroke-width="14"
+                  stroke-dasharray="0 327" stroke-linecap="round" transform="rotate(-90 65 65)" style="transition:stroke-dasharray 1.2s ease"/>
+                <circle id="ring-i" cx="65" cy="65" r="52" fill="none" stroke="#fbbf24" stroke-width="14"
+                  stroke-dasharray="0 327" stroke-linecap="round" transform="rotate(-90 65 65)" style="transition:all 1.2s ease"/>
+                <circle id="ring-o" cx="65" cy="65" r="52" fill="none" stroke="#34d399" stroke-width="14"
+                  stroke-dasharray="0 327" stroke-linecap="round" transform="rotate(-90 65 65)" style="transition:all 1.2s ease"/>
+                <text x="65" y="61" text-anchor="middle" fill="#f0f4f8" font-family="Cabinet Grotesk" font-size="24" font-weight="900" id="ringNum">0</text>
+                <text x="65" y="75" text-anchor="middle" fill="#4a5568" font-family="DM Mono" font-size="8">TOTAL</text>
+              </svg>
+            </div>
+            <div class="status-rows" id="statusRows">
+              <div class="status-row"><div class="s-label"><div class="s-dot" style="background:var(--cyan)"></div>Applied</div><div class="s-bar-wrap"><div class="s-bar" id="sb-applied" style="background:var(--cyan);width:0%"></div></div><div class="s-count" style="color:var(--cyan)" id="sc-applied">0</div></div>
+              <div class="status-row"><div class="s-label"><div class="s-dot" style="background:var(--amber)"></div>Interview</div><div class="s-bar-wrap"><div class="s-bar" id="sb-interview" style="background:var(--amber);width:0%"></div></div><div class="s-count" style="color:var(--amber)" id="sc-interview">0</div></div>
+              <div class="status-row"><div class="s-label"><div class="s-dot" style="background:var(--green)"></div>Offered</div><div class="s-bar-wrap"><div class="s-bar" id="sb-offered" style="background:var(--green);width:0%"></div></div><div class="s-count" style="color:var(--green)" id="sc-offered">0</div></div>
+              <div class="status-row"><div class="s-label"><div class="s-dot" style="background:var(--red)"></div>Rejected</div><div class="s-bar-wrap"><div class="s-bar" id="sb-rejected" style="background:var(--red);width:0%"></div></div><div class="s-count" style="color:var(--red)" id="sc-rejected">0</div></div>
+              <div class="status-row"><div class="s-label"><div class="s-dot" style="background:var(--muted)"></div>Saved</div><div class="s-bar-wrap"><div class="s-bar" id="sb-saved" style="background:var(--muted);width:0%"></div></div><div class="s-count" style="color:var(--muted)" id="sc-saved">0</div></div>
+            </div>
+          </div>
+
+          <div class="card" style="flex:1">
+            <div class="card-head">
+              <span class="card-title">Timeline</span>
+              <span class="card-badge">RECENT</span>
+            </div>
+            <div class="timeline" id="tlMain"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts row -->
+      <div class="three-col fade-in-3">
+        <div class="card">
+          <div class="card-head"><span class="card-title">By Role</span></div>
+          <div class="bar-chart" id="roleChart">
+            <div class="bc-col"><div class="bc-val" style="color:var(--cyan)">0</div><div class="bc-bar" style="height:4px;background:var(--cyan)"></div><div class="bc-lbl">Analyst</div></div>
+            <div class="bc-col"><div class="bc-val" style="color:var(--purple)">0</div><div class="bc-bar" style="height:4px;background:var(--purple)"></div><div class="bc-lbl">Engineer</div></div>
+            <div class="bc-col"><div class="bc-val" style="color:var(--amber)">0</div><div class="bc-bar" style="height:4px;background:var(--amber)"></div><div class="bc-lbl">Scientist</div></div>
+            <div class="bc-col"><div class="bc-val" style="color:var(--pink)">0</div><div class="bc-bar" style="height:4px;background:var(--pink)"></div><div class="bc-lbl">ML/AI</div></div>
+            <div class="bc-col"><div class="bc-val" style="color:var(--muted2)">0</div><div class="bc-bar" style="height:4px;background:var(--muted2)"></div><div class="bc-lbl">Other</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">By Location</span></div>
+          <div class="bar-chart" id="locChart">
+            <div class="bc-col"><div class="bc-val" style="color:var(--green)">0</div><div class="bc-bar" style="height:4px;background:var(--green)"></div><div class="bc-lbl">Remote</div></div>
+            <div class="bc-col"><div class="bc-val" style="color:var(--red)">0</div><div class="bc-bar" style="height:4px;background:var(--red)"></div><div class="bc-lbl">Toronto</div></div>
+            <div class="bc-col"><div class="bc-val" style="color:var(--cyan)">0</div><div class="bc-bar" style="height:4px;background:var(--cyan)"></div><div class="bc-lbl">Vancouver</div></div>
+            <div class="bc-col"><div class="bc-val" style="color:var(--amber)">0</div><div class="bc-bar" style="height:4px;background:var(--amber)"></div><div class="bc-lbl">Calgary</div></div>
+            <div class="bc-col"><div class="bc-val" style="color:var(--purple)">0</div><div class="bc-bar" style="height:4px;background:var(--purple)"></div><div class="bc-lbl">Other</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Weekly Activity</span></div>
+          <div class="bar-chart" id="weekChart">
+            <div class="bc-col"><div class="bc-val" style="color:var(--cyan)">0</div><div class="bc-bar" style="height:4px;background:linear-gradient(to top,var(--purple),var(--cyan))"></div><div class="bc-lbl">Wk1</div></div>
+            <div class="bc-col"><div class="bc-val" style="color:var(--cyan)">0</div><div class="bc-bar" style="height:4px;background:linear-gradient(to top,var(--purple),var(--cyan))"></div><div class="bc-lbl">Wk2</div></div>
+            <div class="bc-col"><div class="bc-val" style="color:var(--cyan)">0</div><div class="bc-bar" style="height:4px;background:linear-gradient(to top,var(--purple),var(--cyan))"></div><div class="bc-lbl">Wk3</div></div>
+            <div class="bc-col"><div class="bc-val" style="color:var(--cyan)">0</div><div class="bc-bar" style="height:4px;background:linear-gradient(to top,var(--purple),var(--cyan))"></div><div class="bc-lbl">Wk4</div></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- end dashboard -->
+
+    <!-- ══ JOBS PAGE ══ -->
+    <div id="page-jobs" class="page">
+      <div class="card fade-in">
+        <div class="card-head">
+          <span class="card-title">All Available Jobs</span>
+          <span class="card-badge" id="jobsPageCount">15 found</span>
+        </div>
+        <div class="job-filters">
+          <button class="ftag on" onclick="setFilter2('all',this)">All</button>
+          <button class="ftag" onclick="setFilter2('remote',this)">🌐 Remote</button>
+          <button class="ftag" onclick="setFilter2('canada',this)">🍁 Canada</button>
+          <button class="ftag" onclick="setFilter2('junior',this)">Junior</button>
+          <button class="ftag" onclick="setFilter2('fresh',this)">Fresher</button>
+          <button class="ftag" onclick="setFilter2('mid',this)">Mid-level</button>
+          <button class="ftag" onclick="setFilter2('analyst',this)">Analyst</button>
+          <button class="ftag" onclick="setFilter2('engineer',this)">Engineer</button>
+          <button class="ftag" onclick="setFilter2('scientist',this)">Scientist</button>
+        </div>
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Search by title, company, skill, salary..." id="jobSearch2" oninput="renderJobs2()">
+        </div>
+        <div class="job-list" style="max-height:600px;" id="jobListFull"></div>
+      </div>
+    </div>
+
+    <!-- ══ TRACKER PAGE ══ -->
+    <div id="page-tracker" class="page">
+      <div class="card fade-in">
+        <div class="card-head">
+          <span class="card-title">My Applications</span>
+          <button class="btn btn-primary" style="padding:6px 16px;font-size:12px;" onclick="openModal()">+ Add New</button>
+        </div>
+        <div id="trackerList" style="display:flex;flex-direction:column;gap:8px;max-height:700px;overflow-y:auto;"></div>
+      </div>
+    </div>
+
+    <!-- ══ ANALYTICS PAGE ══ -->
+    <div id="page-analytics" class="page">
+      <div class="card fade-in" style="margin-bottom:18px;">
+        <div class="card-head"><span class="card-title">Application Heatmap — Last 6 Months</span></div>
+        <div class="heatmap" id="heatmap"></div>
+        <div class="hm-labels">
+          <span class="hm-lbl">6 months ago</span>
+          <span class="hm-lbl">Today</span>
+        </div>
+      </div>
+      <div class="three-col fade-in-2">
+        <div class="card">
+          <div class="card-head"><span class="card-title">Response Rate Trend</span></div>
+          <div style="display:flex;align-items:center;justify-content:center;height:100px;">
+            <div style="text-align:center;">
+              <div style="font-size:48px;font-weight:900;color:var(--cyan);font-family:'DM Mono',monospace;" id="bigRate">0%</div>
+              <div style="font-size:11px;color:var(--muted2);font-family:'DM Mono',monospace;margin-top:6px;">vs 8% industry avg</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Avg Days to Response</span></div>
+          <div style="display:flex;align-items:center;justify-content:center;height:100px;">
+            <div style="text-align:center;">
+              <div style="font-size:48px;font-weight:900;color:var(--amber);font-family:'DM Mono',monospace;">—</div>
+              <div style="font-size:11px;color:var(--muted2);font-family:'DM Mono',monospace;margin-top:6px;">days average</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Best Performing Role</span></div>
+          <div style="display:flex;align-items:center;justify-content:center;height:100px;">
+            <div style="text-align:center;">
+              <div style="font-size:32px;font-weight:900;color:var(--green);font-family:'Cabinet Grotesk',sans-serif;" id="bestRole">—</div>
+              <div style="font-size:11px;color:var(--muted2);font-family:'DM Mono',monospace;margin-top:6px;">most applications</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ AI ASSISTANT PAGE ══ -->
+    <div id="page-ai" class="page">
+      <div class="two-col" style="align-items:start;">
+        <div>
+          <div class="ai-panel fade-in">
+            <div class="ai-header">
+              <div class="ai-avatar">🤖</div>
+              <div>
+                <div class="ai-name">DS Career Assistant</div>
+                <div class="ai-sub">Powered by Claude · Always available</div>
+              </div>
+              <div style="margin-left:auto;"><span class="pulse-dot"></span></div>
+            </div>
+            <div class="ai-messages" id="aiMessages">
+              <div class="msg ai">
+                👋 Hi! I'm your <strong>Data Science Career AI</strong>. I know the Canadian and remote DS job market inside out.<br><br>
+                I can help you with: <span class="tag">resume tips</span> <span class="tag">cover letters</span> <span class="tag">interview prep</span> <span class="tag">salary negotiation</span> <span class="tag">job strategy</span><br><br>
+                <em>What would you like help with today?</em>
+              </div>
+            </div>
+            <div class="quick-prompts">
+              <button class="qp" onclick="sendQuick(this)">Resume tips for Canada DS roles</button>
+              <button class="qp" onclick="sendQuick(this)">How to get my first DS job?</button>
+              <button class="qp" onclick="sendQuick(this)">What skills should I learn?</button>
+              <button class="qp" onclick="sendQuick(this)">Salary ranges in Canada</button>
+              <button class="qp" onclick="sendQuick(this)">Mock interview question</button>
+            </div>
+            <div class="ai-input-wrap">
+              <textarea class="ai-input" id="aiInput" placeholder="Ask anything about your DS job search..." rows="1"
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAI();}"></textarea>
+              <button class="ai-send" id="aiSendBtn" onclick="sendAI()">➤</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="card fade-in-2">
+            <div class="card-head"><span class="card-title">AI Quick Actions</span></div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <button class="btn btn-ghost" style="text-align:left;width:100%;" onclick="aiAction('Generate a cold email template for a data analyst role at a Canadian tech company')">✉️ Generate Cold Email</button>
+              <button class="btn btn-ghost" style="text-align:left;width:100%;" onclick="aiAction('Give me 5 behavioral interview questions for a junior data scientist position and how to answer them')">🎤 Interview Prep Questions</button>
+              <button class="btn btn-ghost" style="text-align:left;width:100%;" onclick="aiAction('What are the top 10 skills I need on my resume to get hired as a data analyst or data engineer in Canada in 2025?')">📝 Top Skills for Resume</button>
+              <button class="btn btn-ghost" style="text-align:left;width:100%;" onclick="aiAction('What is the realistic salary range for a junior data scientist or analyst in Toronto, Vancouver, and Calgary in 2025?')">💰 Salary Guide Canada</button>
+              <button class="btn btn-ghost" style="text-align:left;width:100%;" onclick="aiAction('Give me a 30-day action plan to land my first data science job in Canada as a fresher')">🗓️ 30-Day Action Plan</button>
+            </div>
+          </div>
+
+          <div class="card fade-in-3">
+            <div class="card-head"><span class="card-title">Top Job Boards</span></div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <a href="https://ca.linkedin.com/jobs/data-science-jobs" target="_blank" style="text-decoration:none;">
+                <div style="padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:9px;font-size:13px;color:var(--text);display:flex;align-items:center;justify-content:space-between;transition:all 0.18s;" onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)'">
+                  <span>🔗 LinkedIn Jobs Canada</span><span style="color:var(--muted2);font-size:11px;font-family:'DM Mono',monospace">→</span>
+                </div>
+              </a>
+              <a href="https://www.indeed.ca/jobs?q=data+science" target="_blank" style="text-decoration:none;">
+                <div style="padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:9px;font-size:13px;color:var(--text);display:flex;align-items:center;justify-content:space-between;transition:all 0.18s;" onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)'">
+                  <span>🔗 Indeed Canada DS Jobs</span><span style="color:var(--muted2);font-size:11px;font-family:'DM Mono',monospace">→</span>
+                </div>
+              </a>
+              <a href="https://www.workopolis.com/en/jobs/data-science" target="_blank" style="text-decoration:none;">
+                <div style="padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:9px;font-size:13px;color:var(--text);display:flex;align-items:center;justify-content:space-between;transition:all 0.18s;" onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)'">
+                  <span>🔗 Workopolis Canada</span><span style="color:var(--muted2);font-size:11px;font-family:'DM Mono',monospace">→</span>
+                </div>
+              </a>
+              <a href="https://remoteok.com/remote-data-science-jobs" target="_blank" style="text-decoration:none;">
+                <div style="padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:9px;font-size:13px;color:var(--text);display:flex;align-items:center;justify-content:space-between;transition:all 0.18s;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
+                  <span>🌐 Remote OK (Remote DS)</span><span style="color:var(--muted2);font-size:11px;font-family:'DM Mono',monospace">→</span>
+                </div>
+              </a>
+              <a href="https://www.kaggle.com/jobs" target="_blank" style="text-decoration:none;">
+                <div style="padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:9px;font-size:13px;color:var(--text);display:flex;align-items:center;justify-content:space-between;transition:all 0.18s;" onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)'">
+                  <span>🔗 Kaggle Jobs</span><span style="color:var(--muted2);font-size:11px;font-family:'DM Mono',monospace">→</span>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ GOALS PAGE ══ -->
+    <div id="page-goals" class="page">
+      <div class="two-col">
+        <div class="card fade-in">
+          <div class="card-head"><span class="card-title">Weekly Goals</span></div>
+          <div class="goal-list" id="goalList"></div>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+            <div class="card-title" style="margin-bottom:12px;">Set Weekly Target</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <input type="number" id="goalTarget" min="1" max="50" value="5" class="form-input" style="width:80px;">
+              <span style="color:var(--muted2);font-size:13px;">applications per week</span>
+              <button class="btn btn-primary" style="padding:8px 16px;font-size:12px;" onclick="updateGoal()">Save</button>
+            </div>
+          </div>
+        </div>
+        <div class="card fade-in-2">
+          <div class="card-head"><span class="card-title">Milestones</span></div>
+          <div id="milestoneList" style="display:flex;flex-direction:column;gap:10px;"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end content -->
+</div><!-- end main -->
+</div><!-- end app -->
+
+<!-- ADD APPLICATION MODAL -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
-    <h2>// LOG APPLICATION</h2>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Company Name *</label>
-        <input type="text" id="f-company" placeholder="e.g. Shopify">
+    <div class="modal-head">
+      <h2>Log Application</h2>
+      <p id="modalSub">Track a job you've applied to</p>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Company *</label>
+          <input class="form-input" id="f-company" placeholder="e.g. Shopify">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Job Title *</label>
+          <input class="form-input" id="f-title" placeholder="e.g. Data Analyst">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Location</label>
+          <select class="form-select" id="f-loc">
+            <option>Remote</option>
+            <option>Toronto, ON</option>
+            <option>Vancouver, BC</option>
+            <option>Calgary, AB</option>
+            <option>Montreal, QC</option>
+            <option>Ottawa, ON</option>
+            <option>Edmonton, AB</option>
+            <option>Hybrid</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Salary Range</label>
+          <input class="form-input" id="f-salary" placeholder="e.g. $70K–$90K">
+        </div>
       </div>
       <div class="form-group">
-        <label>Job Title *</label>
-        <input type="text" id="f-title" placeholder="e.g. Data Analyst">
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Location</label>
-        <select id="f-location">
-          <option value="Remote">Remote</option>
-          <option value="Toronto, ON">Toronto, ON</option>
-          <option value="Vancouver, BC">Vancouver, BC</option>
-          <option value="Calgary, AB">Calgary, AB</option>
-          <option value="Montreal, QC">Montreal, QC</option>
-          <option value="Ottawa, ON">Ottawa, ON</option>
-          <option value="Edmonton, AB">Edmonton, AB</option>
-          <option value="Hybrid">Hybrid</option>
-          <option value="Other Canada">Other Canada</option>
-        </select>
+        <label class="form-label">Role Type</label>
+        <div class="chip-group" id="cg-role">
+          <button class="chip-toggle sel" onclick="pick(this,'cg-role')">Analyst</button>
+          <button class="chip-toggle" onclick="pick(this,'cg-role')">Engineer</button>
+          <button class="chip-toggle" onclick="pick(this,'cg-role')">Scientist</button>
+          <button class="chip-toggle" onclick="pick(this,'cg-role')">ML/AI</button>
+          <button class="chip-toggle" onclick="pick(this,'cg-role')">BI/Analytics</button>
+          <button class="chip-toggle" onclick="pick(this,'cg-role')">Other</button>
+        </div>
       </div>
       <div class="form-group">
-        <label>Salary Range</label>
-        <input type="text" id="f-salary" placeholder="e.g. $70K–$90K">
+        <label class="form-label">Experience Level</label>
+        <div class="chip-group" id="cg-level">
+          <button class="chip-toggle sel" onclick="pick(this,'cg-level')">Fresher</button>
+          <button class="chip-toggle" onclick="pick(this,'cg-level')">Junior</button>
+          <button class="chip-toggle" onclick="pick(this,'cg-level')">Mid-level</button>
+          <button class="chip-toggle" onclick="pick(this,'cg-level')">Senior</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <div class="chip-group" id="cg-status">
+          <button class="chip-toggle sel" onclick="pick(this,'cg-status')">Applied</button>
+          <button class="chip-toggle" onclick="pick(this,'cg-status')">Interview</button>
+          <button class="chip-toggle" onclick="pick(this,'cg-status')">Offered</button>
+          <button class="chip-toggle" onclick="pick(this,'cg-status')">Rejected</button>
+          <button class="chip-toggle" onclick="pick(this,'cg-status')">Saved</button>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date Applied</label>
+          <input class="form-input" type="date" id="f-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Job URL (optional)</label>
+          <input class="form-input" id="f-url" placeholder="https://...">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <textarea class="form-textarea" id="f-notes" placeholder="Recruiter name, interview date, feedback..."></textarea>
       </div>
     </div>
-    <div class="form-group">
-      <label>Role Type</label>
-      <div class="chip-group" id="roleChips">
-        <button class="chip selected" onclick="selectChip(this,'role')">Analyst</button>
-        <button class="chip" onclick="selectChip(this,'role')">Engineer</button>
-        <button class="chip" onclick="selectChip(this,'role')">Scientist</button>
-        <button class="chip" onclick="selectChip(this,'role')">ML/AI</button>
-        <button class="chip" onclick="selectChip(this,'role')">BI/Reporting</button>
-        <button class="chip" onclick="selectChip(this,'role')">Other</button>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Level</label>
-      <div class="chip-group" id="levelChips">
-        <button class="chip selected" onclick="selectChip(this,'level')">Fresher</button>
-        <button class="chip" onclick="selectChip(this,'level')">Junior</button>
-        <button class="chip" onclick="selectChip(this,'level')">Mid-level</button>
-        <button class="chip" onclick="selectChip(this,'level')">Senior</button>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Status</label>
-      <div class="chip-group" id="statusChips">
-        <button class="chip selected" onclick="selectChip(this,'status')">Applied</button>
-        <button class="chip" onclick="selectChip(this,'status')">Interview</button>
-        <button class="chip" onclick="selectChip(this,'status')">Offered</button>
-        <button class="chip" onclick="selectChip(this,'status')">Rejected</button>
-        <button class="chip" onclick="selectChip(this,'status')">Saved</button>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Date Applied</label>
-      <input type="date" id="f-date">
-    </div>
-    <div class="form-group">
-      <label>Notes</label>
-      <textarea id="f-notes" placeholder="Job link, recruiter name, any notes..."></textarea>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-primary" onclick="saveApplication()" style="flex:1">Save Application</button>
+    <div class="modal-foot">
+      <button class="btn btn-primary" style="flex:1;" onclick="saveApp()">Save Application</button>
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
     </div>
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
-// ── Data store ───────────────────────────────────────────────
-const STORAGE_KEY = 'ds_job_tracker_v2';
+// ── STORE ───────────────────────────────────────────────────────────
+const KEY = 'dspro_v1';
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{apps:[],goal:5};}catch{return{apps:[],goal:5};}}
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d));}catch{}}
+let state = load();
 
-function loadData() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { applications: [] };
-  } catch { return { applications: [] }; }
-}
-
-function saveData(data) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch {}
-}
-
-let state = loadData();
-let allJobs = [];
-let currentFilter = 'all';
-
-// ── Sample job listings (simulated from real sources) ─────────
-const sampleJobs = [
-  { id:1, title:"Data Analyst – Entry Level", company:"Shopify", logo:"S", logoColor:"#00c48c", location:"Remote", type:"remote", level:"junior", role:"analyst", salary:"$65K–$80K", daysAgo:1, url:"#" },
-  { id:2, title:"Junior Data Engineer", company:"RBC Royal Bank", logo:"R", logoColor:"#0055a5", location:"Toronto, ON", type:"canada", level:"junior", role:"engineer", salary:"$75K–$95K", daysAgo:2, url:"#" },
-  { id:3, title:"Data Science Fresher", company:"TD Bank", logo:"T", logoColor:"#2c8e30", location:"Toronto, ON", type:"canada", level:"fresh", role:"scientist", salary:"$60K–$75K", daysAgo:1, url:"#" },
-  { id:4, title:"ML Engineer – Junior", company:"Cohere", logo:"C", logoColor:"#7b61ff", location:"Remote", type:"remote", level:"junior", role:"engineer", salary:"$90K–$115K", daysAgo:3, url:"#" },
-  { id:5, title:"Business Data Analyst", company:"TELUS", logo:"T", logoColor:"#4b0082", location:"Vancouver, BC", type:"canada", level:"mid", role:"analyst", salary:"$70K–$88K", daysAgo:2, url:"#" },
-  { id:6, title:"Data Analyst (Remote)", company:"Wealthsimple", logo:"W", logoColor:"#00b894", location:"Remote", type:"remote", level:"junior", role:"analyst", salary:"$72K–$90K", daysAgo:4, url:"#" },
-  { id:7, title:"Junior BI Developer", company:"Deloitte Canada", logo:"D", logoColor:"#86c440", location:"Calgary, AB", type:"canada", level:"junior", role:"analyst", salary:"$68K–$82K", daysAgo:1, url:"#" },
-  { id:8, title:"Data Engineer Trainee", company:"Bell Canada", logo:"B", logoColor:"#00aeef", location:"Montreal, QC", type:"canada", level:"fresh", role:"engineer", salary:"$58K–$72K", daysAgo:5, url:"#" },
-  { id:9, title:"Remote ML Researcher", company:"Scale AI", logo:"S", logoColor:"#ff6b6b", location:"Remote", type:"remote", level:"mid", role:"engineer", salary:"$95K–$130K", daysAgo:2, url:"#" },
-  { id:10, title:"Data Analyst – New Grad", company:"Intact Insurance", logo:"I", logoColor:"#f59e0b", location:"Ottawa, ON", type:"canada", level:"fresh", role:"analyst", salary:"$55K–$68K", daysAgo:3, url:"#" },
-  { id:11, title:"Junior Data Scientist", company:"Loblaw Companies", logo:"L", logoColor:"#e63946", location:"Toronto, ON", type:"canada", level:"junior", role:"scientist", salary:"$72K–$88K", daysAgo:1, url:"#" },
-  { id:12, title:"Data Analyst – Remote OK", company:"HubSpot", logo:"H", logoColor:"#ff7a59", location:"Remote", type:"remote", level:"junior", role:"analyst", salary:"$75K–$95K", daysAgo:6, url:"#" },
-  { id:13, title:"Analytics Engineer (Entry)", company:"Manulife", logo:"M", logoColor:"#00587a", location:"Toronto, ON", type:"canada", level:"junior", role:"engineer", salary:"$70K–$87K", daysAgo:2, url:"#" },
-  { id:14, title:"AI/ML Intern → Full Time", company:"Microsoft Canada", logo:"M", logoColor:"#0078d4", location:"Vancouver, BC", type:"canada", level:"fresh", role:"engineer", salary:"$65K–$85K", daysAgo:4, url:"#" },
-  { id:15, title:"Remote Data Analyst", company:"Yelp", logo:"Y", logoColor:"#ff1a1a", location:"Remote", type:"remote", level:"junior", role:"analyst", salary:"$70K–$88K", daysAgo:3, url:"#" },
+// ── JOB DATA ────────────────────────────────────────────────────────
+const JOBS = [
+  {id:1,title:"Data Analyst – Entry Level",company:"Shopify",logo:"S",lc:"#00c48c",loc:"Remote",type:"remote",lvl:"junior",role:"analyst",sal:"$65K–$80K",age:1,tags:["SQL","Python","Tableau"]},
+  {id:2,title:"Junior Data Engineer",company:"RBC Royal Bank",logo:"R",lc:"#0055a5",loc:"Toronto, ON",type:"canada",lvl:"junior",role:"engineer",sal:"$75K–$95K",age:2,tags:["Spark","Python","AWS"]},
+  {id:3,title:"Data Science New Grad",company:"TD Bank",logo:"T",lc:"#2c8e30",loc:"Toronto, ON",type:"canada",lvl:"fresh",role:"scientist",sal:"$60K–$75K",age:1,tags:["Python","ML","Statistics"]},
+  {id:4,title:"ML Engineer – Junior",company:"Cohere",logo:"C",lc:"#7b61ff",loc:"Remote",type:"remote",lvl:"junior",role:"engineer",sal:"$90K–$115K",age:3,tags:["PyTorch","LLMs","Python"]},
+  {id:5,title:"Business Data Analyst",company:"TELUS",logo:"T",lc:"#4b0082",loc:"Vancouver, BC",type:"canada",lvl:"mid",role:"analyst",sal:"$70K–$88K",age:2,tags:["Power BI","SQL","Excel"]},
+  {id:6,title:"Data Analyst (Remote OK)",company:"Wealthsimple",logo:"W",lc:"#00b894",loc:"Remote",type:"remote",lvl:"junior",role:"analyst",sal:"$72K–$90K",age:4,tags:["SQL","dbt","Looker"]},
+  {id:7,title:"Junior BI Developer",company:"Deloitte Canada",logo:"D",lc:"#86c440",loc:"Calgary, AB",type:"canada",lvl:"junior",role:"analyst",sal:"$68K–$82K",age:1,tags:["Power BI","SQL","Azure"]},
+  {id:8,title:"Data Engineer Trainee",company:"Bell Canada",logo:"B",lc:"#00aeef",loc:"Montreal, QC",type:"canada",lvl:"fresh",role:"engineer",sal:"$58K–$72K",age:5,tags:["Python","Kafka","ETL"]},
+  {id:9,title:"Remote ML Engineer",company:"Scale AI",logo:"S",lc:"#ff6b6b",loc:"Remote",type:"remote",lvl:"mid",role:"engineer",sal:"$95K–$130K",age:2,tags:["Python","ML","RLHF"]},
+  {id:10,title:"Data Analyst – New Grad",company:"Intact Insurance",logo:"I",lc:"#f59e0b",loc:"Ottawa, ON",type:"canada",lvl:"fresh",role:"analyst",sal:"$55K–$68K",age:3,tags:["SQL","R","Visualization"]},
+  {id:11,title:"Junior Data Scientist",company:"Loblaw",logo:"L",lc:"#e63946",loc:"Toronto, ON",type:"canada",lvl:"junior",role:"scientist",sal:"$72K–$88K",age:1,tags:["Python","Scikit-learn","SQL"]},
+  {id:12,title:"Analytics Engineer (Entry)",company:"Manulife",logo:"M",lc:"#00587a",loc:"Toronto, ON",type:"canada",lvl:"junior",role:"engineer",sal:"$70K–$87K",age:2,tags:["dbt","Snowflake","SQL"]},
+  {id:13,title:"AI/ML Graduate Hire",company:"Microsoft Canada",logo:"M",lc:"#0078d4",loc:"Vancouver, BC",type:"canada",lvl:"fresh",role:"engineer",sal:"$85K–$105K",age:4,tags:["Azure","Python","ML"]},
+  {id:14,title:"Remote Data Analyst",company:"Hootsuite",logo:"H",lc:"#ff6600",loc:"Remote",type:"remote",lvl:"junior",role:"analyst",sal:"$70K–$88K",age:3,tags:["SQL","Tableau","Python"]},
+  {id:15,title:"Data Science Intern→FTE",company:"Element AI",logo:"E",lc:"#7b61ff",loc:"Montreal, QC",type:"canada",lvl:"fresh",role:"scientist",sal:"$55K–$70K",age:1,tags:["Research","NLP","Python"]},
 ];
 
-allJobs = sampleJobs;
+let jobFilter = 'all';
+let jobFilter2 = 'all';
 
-// ── Filter logic ───────────────────────────────────────────────
-function setFilter(f, btn) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+// ── NAVIGATION ──────────────────────────────────────────────────────
+const pages = {
+  dashboard:'Overview', jobs:'Browse Jobs', tracker:'My Applications',
+  analytics:'Analytics', ai:'AI Assistant', goals:'Goals'
+};
+function showPage(id, navEl){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(navEl) navEl.classList.add('active');
+  document.getElementById('pageTitle').textContent = pages[id]||id;
+  if(id==='tracker') renderTracker();
+  if(id==='analytics') renderAnalytics();
+  if(id==='goals') renderGoals();
+  if(id==='jobs') renderJobs2();
+}
+
+// ── JOB RENDERING ───────────────────────────────────────────────────
+function setFilter(f,btn){
+  jobFilter=f;
+  document.querySelectorAll('#dashFilters .ftag').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
   renderJobs();
 }
-
-function filterJobs() { renderJobs(); }
-
-function renderJobs() {
-  const search = document.getElementById('searchBar').value.toLowerCase();
-  let jobs = allJobs.filter(j => {
-    const matchSearch = !search ||
-      j.title.toLowerCase().includes(search) ||
-      j.company.toLowerCase().includes(search) ||
-      j.role.toLowerCase().includes(search);
-    const matchFilter =
-      currentFilter === 'all' ||
-      j.type === currentFilter ||
-      j.level === currentFilter ||
-      j.role === currentFilter;
-    return matchSearch && matchFilter;
-  });
-
-  const list = document.getElementById('jobList');
-  document.getElementById('jobCount').textContent = `${jobs.length} found`;
-
-  if (!jobs.length) {
-    list.innerHTML = '<div class="empty-state">No jobs match your filters</div>';
-    return;
-  }
-
-  list.innerHTML = jobs.map(j => {
-    const typeBadge = j.type === 'remote'
-      ? '<span class="badge badge-remote">Remote</span>'
-      : '<span class="badge badge-canada">🍁 Canada</span>';
-    const levelBadge = j.level === 'junior'
-      ? '<span class="level-badge level-junior">Junior</span>'
-      : j.level === 'fresh'
-      ? '<span class="level-badge level-fresh">Fresher</span>'
-      : '<span class="level-badge level-mid">Mid</span>';
-    const applied = state.applications.find(a => a.company === j.company && a.title === j.title);
-    const appliedMark = applied ? `<div class="status-dot ${applied.status}" title="Status: ${applied.status}"></div>` : '';
-    return `
-      <div class="job-item" onclick="quickApply('${j.title.replace(/'/g,"\\'")}','${j.company}','${j.location}','${j.salary}','${j.role}','${j.level}','${j.type}')">
-        <div class="job-logo" style="background:${j.logoColor}22;color:${j.logoColor}">${j.logo}</div>
-        <div class="job-info">
-          <div class="job-title">${j.title}</div>
-          <div class="job-meta">
-            <span>${j.company}</span>
-            <span class="dot">·</span>
-            <span>${j.location}</span>
-            <span class="dot">·</span>
-            ${typeBadge} ${levelBadge}
-          </div>
-        </div>
-        <div class="job-right">
-          <div class="job-salary">${j.salary}</div>
-          <div class="job-age">${j.daysAgo}d ago</div>
-          ${appliedMark}
-        </div>
-      </div>`;
-  }).join('');
+function setFilter2(f,btn){
+  jobFilter2=f;
+  document.querySelectorAll('#page-jobs .ftag').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderJobs2();
 }
 
-// ── Stats & Charts ─────────────────────────────────────────────
-function updateStats() {
-  const apps = state.applications;
-  const counts = { applied:0, interview:0, offered:0, rejected:0, saved:0 };
-  apps.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; });
+function filteredJobs(f, search){
+  return JOBS.filter(j=>{
+    const s=(search||'').toLowerCase();
+    const ms=!s||j.title.toLowerCase().includes(s)||j.company.toLowerCase().includes(s)||
+      j.role.toLowerCase().includes(s)||(j.tags||[]).some(t=>t.toLowerCase().includes(s));
+    const mf=f==='all'||j.type===f||j.lvl===f||j.role===f;
+    return ms&&mf;
+  });
+}
 
-  const total = apps.length;
-  const responded = counts.interview + counts.offered + counts.rejected;
-  const rate = total ? Math.round((responded / total) * 100) : 0;
+function jobCardHTML(j, container){
+  const applied=state.apps.find(a=>a.company===j.company&&a.title===j.title);
+  const typeBadge=j.type==='remote'?'<span class="chip chip-remote">Remote</span>':'<span class="chip chip-canada">🍁 CA</span>';
+  const lvlBadge=j.lvl==='junior'?'<span class="chip chip-junior">Junior</span>':j.lvl==='fresh'?'<span class="chip chip-fresh">Fresher</span>':'<span class="chip chip-mid">Mid</span>';
+  const newBadge=j.age<=1?'<span class="chip chip-new">New</span>':'';
+  const appliedHTML=applied?`<div class="j-applied-tag">✓ ${applied.status}</div>`:'';
+  return `<div class="job-card${applied?' applied-mark':''}" onclick="quickLog('${j.title.replace(/'/g,"\\'")}','${j.company}','${j.loc}','${j.sal}','${j.role}','${j.lvl}')">
+    <div class="j-logo" style="background:${j.lc}18;color:${j.lc}">${j.logo}</div>
+    <div class="j-body">
+      <div class="j-title">${j.title} ${newBadge}</div>
+      <div class="j-meta">
+        <span class="j-company">${j.company}</span>
+        <span class="j-sep">·</span>
+        <span class="j-company">${j.loc}</span>
+        <span class="j-sep">·</span>
+        ${typeBadge}${lvlBadge}
+        ${(j.tags||[]).slice(0,2).map(t=>`<span class="chip" style="background:rgba(56,189,248,0.07);color:var(--muted2)">${t}</span>`).join('')}
+      </div>
+    </div>
+    <div class="j-right">
+      <div class="j-salary">${j.sal}</div>
+      <div class="j-age">${j.age===0?'Today':j.age+'d ago'}</div>
+      ${appliedHTML}
+    </div>
+  </div>`;
+}
 
-  const now = new Date();
-  const weekAgo = new Date(now - 7 * 86400000);
-  const thisWeek = apps.filter(a => new Date(a.date) >= weekAgo).length;
+function renderJobs(){
+  const s=document.getElementById('jobSearch').value;
+  const jobs=filteredJobs(jobFilter,s);
+  document.getElementById('listCount').textContent=`${jobs.length} found`;
+  document.getElementById('jobListMain').innerHTML=jobs.length
+    ?jobs.map(j=>jobCardHTML(j,'main')).join('')
+    :`<div class="empty"><div class="empty-icon">🔍</div>No jobs match your search</div>`;
+}
 
-  document.getElementById('statAvailable').textContent = allJobs.length;
-  document.getElementById('statApplied').textContent = total;
-  document.getElementById('statInterview').textContent = counts.interview;
-  document.getElementById('statRate').textContent = rate + '%';
-  document.getElementById('statWeek').textContent = thisWeek;
+function renderJobs2(){
+  const s=document.getElementById('jobSearch2').value;
+  const jobs=filteredJobs(jobFilter2,s);
+  document.getElementById('jobsPageCount').textContent=`${jobs.length} found`;
+  document.getElementById('jobListFull').innerHTML=jobs.length
+    ?jobs.map(j=>jobCardHTML(j,'full')).join('')
+    :`<div class="empty"><div class="empty-icon">🔍</div>No jobs match</div>`;
+}
 
-  // Status bars
-  const max = Math.max(...Object.values(counts), 1);
-  Object.keys(counts).forEach(k => {
-    document.getElementById('cnt-' + k).textContent = counts[k];
-    document.getElementById('bar-' + k).style.width = (counts[k] / max * 100) + '%';
+// ── STATS ───────────────────────────────────────────────────────────
+function updateStats(){
+  const apps=state.apps;
+  const c={applied:0,interview:0,offered:0,rejected:0,saved:0};
+  apps.forEach(a=>{if(c[a.status]!==undefined)c[a.status]++;});
+  const total=apps.length;
+  const responded=c.interview+c.offered+c.rejected;
+  const rate=total?Math.round(responded/total*100):0;
+  const now=new Date();
+  const week=apps.filter(a=>new Date(a.date+'T12:00:00')>=(new Date(now-7*864e5))).length;
+
+  document.getElementById('s-total').textContent=total;
+  document.getElementById('s-inter').textContent=c.interview;
+  document.getElementById('s-rate').textContent=rate+'%';
+  document.getElementById('s-week').textContent=week;
+  document.getElementById('s-total-d').textContent=total?`↑ Keep going!`:'Start logging!';
+
+  const max=Math.max(...Object.values(c),1);
+  Object.keys(c).forEach(k=>{
+    const el=document.getElementById('sc-'+k);
+    const bar=document.getElementById('sb-'+k);
+    if(el)el.textContent=c[k];
+    if(bar)bar.style.width=(c[k]/max*100)+'%';
   });
 
-  // Donut
-  const C = 339;
-  document.getElementById('donutTotal').textContent = total;
-  const aW = total ? (counts.applied / total) * C : 0;
-  const iW = total ? (counts.interview / total) * C : 0;
-  const oW = total ? (counts.offered / total) * C : 0;
-  document.getElementById('donut-applied').setAttribute('stroke-dasharray', `${aW} ${C - aW}`);
-  document.getElementById('donut-interview').setAttribute('stroke-dasharray', `${iW} ${C - iW}`);
-  document.getElementById('donut-interview').setAttribute('stroke-dashoffset', -aW);
-  document.getElementById('donut-offered').setAttribute('stroke-dasharray', `${oW} ${C - oW}`);
-  document.getElementById('donut-offered').setAttribute('stroke-dashoffset', -(aW + iW));
+  document.getElementById('ringNum').textContent=total;
+  const C=327;
+  const aw=total?(c.applied/total)*C:0;
+  const iw=total?(c.interview/total)*C:0;
+  const ow=total?(c.offered/total)*C:0;
+  document.getElementById('ring-a').setAttribute('stroke-dasharray',`${aw} ${C-aw}`);
+  document.getElementById('ring-i').setAttribute('stroke-dasharray',`${iw} ${C-iw}`);
+  document.getElementById('ring-i').setAttribute('stroke-dashoffset',-aw);
+  document.getElementById('ring-o').setAttribute('stroke-dasharray',`${ow} ${C-ow}`);
+  document.getElementById('ring-o').setAttribute('stroke-dashoffset',-(aw+iw));
 
   updateCharts();
+  renderTimeline();
+  if(document.getElementById('bigRate'))document.getElementById('bigRate').textContent=rate+'%';
 }
 
-function updateCharts() {
-  const apps = state.applications;
-  const roles = { analyst:0, engineer:0, scientist:0, 'ml/ai':0, other:0 };
-  apps.forEach(a => {
-    const r = (a.role || '').toLowerCase();
-    if (r === 'analyst') roles.analyst++;
-    else if (r === 'engineer') roles.engineer++;
-    else if (r === 'scientist') roles.scientist++;
-    else if (r === 'ml/ai') roles['ml/ai']++;
-    else roles.other++;
+function updateCharts(){
+  const apps=state.apps;
+  const roles={analyst:0,engineer:0,scientist:0,'ml/ai':0,other:0};
+  const locs={remote:0,toronto:0,vancouver:0,calgary:0,other:0};
+  apps.forEach(a=>{
+    const r=(a.role||'').toLowerCase();
+    if(roles[r]!==undefined)roles[r]++;else roles.other++;
+    const l=(a.location||'').toLowerCase();
+    if(l.includes('remote'))locs.remote++;
+    else if(l.includes('toronto'))locs.toronto++;
+    else if(l.includes('vancouver'))locs.vancouver++;
+    else if(l.includes('calgary'))locs.calgary++;
+    else locs.other++;
   });
 
-  const maxRole = Math.max(...Object.values(roles), 1);
-  const roleVals = [roles.analyst, roles.engineer, roles.scientist, roles['ml/ai'], roles.other];
-  const roleBars = document.getElementById('roleChart').querySelectorAll('.bar-col');
-  roleVals.forEach((v, i) => {
-    roleBars[i].querySelector('.bar-val').textContent = v;
-    roleBars[i].querySelector('.bar').style.height = (v / maxRole * 90 + 4) + 'px';
-  });
-
-  // Week chart
-  const now = new Date();
-  const weekCounts = [0,0,0,0];
-  apps.forEach(a => {
-    const d = new Date(a.date);
-    const daysAgo = Math.floor((now - d) / 86400000);
-    const week = Math.floor(daysAgo / 7);
-    if (week >= 0 && week < 4) weekCounts[3 - week]++;
-  });
-  const maxW = Math.max(...weekCounts, 1);
-  const weekBars = document.getElementById('weekChart').querySelectorAll('.bar-col');
-  weekCounts.forEach((v, i) => {
-    weekBars[i].querySelector('.bar-val').textContent = v;
-    weekBars[i].querySelector('.bar').style.height = (v / maxW * 90 + 4) + 'px';
-  });
-}
-
-// ── Timeline ───────────────────────────────────────────────────
-function renderTimeline() {
-  const tl = document.getElementById('timeline');
-  const apps = [...state.applications].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 12);
-  if (!apps.length) {
-    tl.innerHTML = '<div class="empty-state">No applications logged yet</div>';
-    return;
+  function setBar(chartId,vals){
+    const cols=document.getElementById(chartId)?.querySelectorAll('.bc-col');
+    if(!cols)return;
+    const max=Math.max(...vals,1);
+    vals.forEach((v,i)=>{
+      if(cols[i]){
+        cols[i].querySelector('.bc-val').textContent=v;
+        cols[i].querySelector('.bc-bar').style.height=(v/max*100+4)+'px';
+      }
+    });
   }
-  const statusColor = { applied:'var(--accent)', interview:'#f59e0b', offered:'var(--accent4)', rejected:'var(--accent3)', saved:'var(--muted)' };
-  tl.innerHTML = apps.map(a => `
-    <div class="tl-item">
-      <div class="tl-line">
-        <div class="tl-dot" style="background:${statusColor[a.status] || 'var(--muted)'}"></div>
-        <div class="tl-connector"></div>
+  setBar('roleChart',[roles.analyst,roles.engineer,roles.scientist,roles['ml/ai'],roles.other]);
+  setBar('locChart',[locs.remote,locs.toronto,locs.vancouver,locs.calgary,locs.other]);
+
+  const now=new Date();
+  const wk=[0,0,0,0];
+  apps.forEach(a=>{
+    const d=Math.floor((now-new Date(a.date+'T12:00:00'))/864e5);
+    const w=Math.floor(d/7);
+    if(w>=0&&w<4)wk[3-w]++;
+  });
+  setBar('weekChart',wk);
+
+  // Best role
+  const br=Object.entries(roles).sort((a,b)=>b[1]-a[1])[0];
+  const brel=document.getElementById('bestRole');
+  if(brel)brel.textContent=br&&br[1]>0?br[0].charAt(0).toUpperCase()+br[0].slice(1):'—';
+}
+
+// ── TIMELINE ────────────────────────────────────────────────────────
+const statusColors={applied:'var(--cyan)',interview:'var(--amber)',offered:'var(--green)',rejected:'var(--red)',saved:'var(--muted)'};
+const statusBg={applied:'rgba(56,189,248,0.12)',interview:'rgba(251,191,36,0.12)',offered:'rgba(52,211,153,0.12)',rejected:'rgba(248,113,113,0.12)',saved:'rgba(74,85,104,0.15)'};
+
+function renderTimeline(){
+  const tl=document.getElementById('tlMain');
+  if(!tl)return;
+  const sorted=[...state.apps].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,10);
+  if(!sorted.length){tl.innerHTML='<div class="empty"><div class="empty-icon">📭</div>No applications yet</div>';return;}
+  tl.innerHTML=sorted.map(a=>`
+    <div class="tl-entry">
+      <div class="tl-spine">
+        <div class="tl-node" style="background:${statusColors[a.status]||'var(--muted)'}"></div>
+        <div class="tl-line2"></div>
       </div>
-      <div class="tl-body">
-        <div class="tl-date">${formatDate(a.date)}</div>
-        <div class="tl-title">${a.title}</div>
-        <div class="tl-company">${a.company} · <span style="color:${statusColor[a.status]}">${a.status.toUpperCase()}</span></div>
+      <div class="tl-content">
+        <div class="tl-when">${fmtDate(a.date)}</div>
+        <div class="tl-job">${a.title}</div>
+        <div class="tl-where">${a.company} · ${a.location||''}</div>
+        <span class="tl-status-tag" style="background:${statusBg[a.status]};color:${statusColors[a.status]}">${a.status}</span>
       </div>
     </div>`).join('');
 }
 
-function formatDate(d) {
-  const dt = new Date(d + 'T12:00:00');
-  return dt.toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' });
+// ── TRACKER PAGE ─────────────────────────────────────────────────────
+function renderTracker(){
+  const el=document.getElementById('trackerList');
+  if(!state.apps.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div>No applications yet. Click "+ Add New" to start!</div>';return;}
+  const sorted=[...state.apps].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  el.innerHTML=sorted.map(a=>`
+    <div class="job-card" style="cursor:default;">
+      <div class="j-logo" style="background:rgba(56,189,248,0.08);color:var(--cyan);font-size:14px;">${(a.company||'?')[0].toUpperCase()}</div>
+      <div class="j-body">
+        <div class="j-title">${a.title}</div>
+        <div class="j-meta">
+          <span class="j-company">${a.company}</span>
+          <span class="j-sep">·</span>
+          <span class="j-company">${a.location||''}</span>
+          <span class="j-sep">·</span>
+          <span class="chip" style="background:rgba(56,189,248,0.08);color:var(--muted2)">${a.role||''}</span>
+          <span class="chip" style="background:rgba(56,189,248,0.08);color:var(--muted2)">${a.level||''}</span>
+        </div>
+        ${a.notes?`<div style="font-size:11px;color:var(--muted2);margin-top:4px;font-family:'DM Mono',monospace;">${a.notes.substring(0,60)}${a.notes.length>60?'…':''}</div>`:''}
+      </div>
+      <div class="j-right">
+        <span class="tl-status-tag" style="background:${statusBg[a.status]};color:${statusColors[a.status]}">${a.status}</span>
+        <div class="j-age" style="margin-top:6px;">${fmtDate(a.date)}</div>
+        <div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end;">
+          <select style="background:var(--s2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:11px;padding:3px 6px;cursor:pointer;" onchange="changeStatus(${a.id},this.value)">
+            ${['applied','interview','offered','rejected','saved'].map(s=>`<option${a.status===s?' selected':''}>${s}</option>`).join('')}
+          </select>
+          <button onclick="deleteApp(${a.id})" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.2);color:var(--red);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;">✕</button>
+        </div>
+      </div>
+    </div>`).join('');
 }
 
-// ── Modal ──────────────────────────────────────────────────────
-function openModal() { document.getElementById('modalOverlay').classList.add('open'); }
-function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
-
-document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
-
-document.getElementById('modalOverlay').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
-
-function selectChip(el, group) {
-  const parent = el.closest('.chip-group');
-  parent.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
+function changeStatus(id,status){
+  const app=state.apps.find(a=>a.id===id);
+  if(app){app.status=status;save(state);updateStats();renderTracker();toast('Status updated ✓');}
+}
+function deleteApp(id){
+  if(!confirm('Delete this application?'))return;
+  state.apps=state.apps.filter(a=>a.id!==id);save(state);updateStats();renderTracker();toast('Deleted');
 }
 
-function getSelectedChip(groupId) {
-  const sel = document.getElementById(groupId)?.querySelector('.chip.selected');
-  return sel ? sel.textContent : '';
+// ── ANALYTICS ────────────────────────────────────────────────────────
+function renderAnalytics(){
+  const hm=document.getElementById('heatmap');
+  if(!hm)return;
+  const cells=[];
+  const now=new Date();
+  for(let i=181;i>=0;i--){
+    const d=new Date(now-i*864e5);
+    const ds=d.toISOString().split('T')[0];
+    const count=state.apps.filter(a=>a.date===ds).length;
+    const lvl=count===0?'':count===1?'l1':count===2?'l2':count<=3?'l3':'l4';
+    cells.push(`<div class="hm-cell ${lvl}" title="${ds}: ${count} application${count!==1?'s':''}"></div>`);
+  }
+  hm.innerHTML=cells.join('');
 }
 
-function quickApply(title, company, location, salary, role, level, type) {
-  document.getElementById('f-title').value = title;
-  document.getElementById('f-company').value = company;
-  document.getElementById('f-salary').value = salary;
-  document.getElementById('f-location').value = location;
-  // pre-select role chip
-  const roleChips = document.getElementById('roleChips').querySelectorAll('.chip');
-  roleChips.forEach(c => { c.classList.toggle('selected', c.textContent.toLowerCase() === role); });
-  const levelChips = document.getElementById('levelChips').querySelectorAll('.chip');
-  levelChips.forEach(c => { c.classList.toggle('selected', c.textContent.toLowerCase() === level || (level==='fresh' && c.textContent==='Fresher')); });
+// ── GOALS ─────────────────────────────────────────────────────────────
+function renderGoals(){
+  const now=new Date();
+  const week=state.apps.filter(a=>new Date(a.date+'T12:00:00')>=(new Date(now-7*864e5))).length;
+  const month=state.apps.filter(a=>new Date(a.date+'T12:00:00')>=(new Date(now-30*864e5))).length;
+  const goal=state.goal||5;
+
+  const gl=document.getElementById('goalList');
+  const goals=[
+    {name:'Applications this week',curr:week,target:goal,color:'var(--cyan)'},
+    {name:'Applications this month',curr:month,target:goal*4,color:'var(--purple)'},
+    {name:'Interviews secured',curr:state.apps.filter(a=>a.status==='interview').length,target:3,color:'var(--amber)'},
+    {name:'Offers received',curr:state.apps.filter(a=>a.status==='offered').length,target:1,color:'var(--green)'},
+  ];
+  gl.innerHTML=goals.map(g=>{
+    const pct=Math.min(g.curr/g.target*100,100);
+    return `<div class="goal-item">
+      <div class="goal-head">
+        <span class="goal-name">${g.name}</span>
+        <span class="goal-pct" style="color:${g.color}">${g.curr}/${g.target}</span>
+      </div>
+      <div class="goal-bar-wrap"><div class="goal-bar" style="width:${pct}%;background:${g.color}"></div></div>
+    </div>`;
+  }).join('');
+
+  const ml=document.getElementById('milestoneList');
+  const total=state.apps.length;
+  const milestones=[
+    {label:'First Application',n:1,icon:'🚀'},
+    {label:'5 Applications',n:5,icon:'⭐'},
+    {label:'10 Applications',n:10,icon:'🔥'},
+    {label:'First Interview',n:1,icon:'🎤',check:state.apps.some(a=>a.status==='interview')},
+    {label:'25 Applications',n:25,icon:'💪'},
+    {label:'First Offer',n:1,icon:'🎉',check:state.apps.some(a=>a.status==='offered')},
+  ];
+  ml.innerHTML=milestones.map(m=>{
+    const done=m.check!==undefined?m.check:total>=m.n;
+    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:${done?'rgba(52,211,153,0.06)':'var(--s2)'};border:1px solid ${done?'rgba(52,211,153,0.2)':'var(--border)'};border-radius:9px;">
+      <span style="font-size:20px;">${m.icon}</span>
+      <span style="font-size:13px;font-weight:600;color:${done?'var(--green)':'var(--muted2)'};">${m.label}</span>
+      <span style="margin-left:auto;font-size:12px;">${done?'✅':'🔒'}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('goalTarget').value=state.goal||5;
+}
+
+function updateGoal(){
+  state.goal=parseInt(document.getElementById('goalTarget').value)||5;
+  save(state);renderGoals();toast('Goal updated ✓');
+}
+
+// ── MODAL ──────────────────────────────────────────────────────────────
+function openModal(){document.getElementById('modalOverlay').classList.add('open');document.getElementById('f-date').value=new Date().toISOString().split('T')[0];}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open');}
+document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('modalOverlay'))closeModal();});
+
+function pick(el,groupId){
+  document.getElementById(groupId).querySelectorAll('.chip-toggle').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function getChip(id){const s=document.getElementById(id)?.querySelector('.sel');return s?s.textContent:'';}
+
+function quickLog(title,company,loc,sal,role,lvl){
+  document.getElementById('f-title').value=title;
+  document.getElementById('f-company').value=company;
+  document.getElementById('f-salary').value=sal;
+  const opts=document.getElementById('f-loc').options;
+  for(let o of opts){if(o.value===loc){o.selected=true;break;}}
+  ['cg-role','cg-level'].forEach(id=>{
+    document.getElementById(id).querySelectorAll('.chip-toggle').forEach(c=>c.classList.remove('sel'));
+  });
+  document.getElementById('cg-role').querySelectorAll('.chip-toggle').forEach(c=>{if(c.textContent.toLowerCase()===role)c.classList.add('sel');});
+  document.getElementById('cg-level').querySelectorAll('.chip-toggle').forEach(c=>{
+    const t=c.textContent.toLowerCase();
+    if(t===lvl||(lvl==='fresh'&&t==='fresher'))c.classList.add('sel');
+  });
   openModal();
 }
 
-function saveApplication() {
-  const title = document.getElementById('f-title').value.trim();
-  const company = document.getElementById('f-company').value.trim();
-  if (!title || !company) { alert('Please fill in Company and Job Title'); return; }
-
-  const app = {
-    id: Date.now(),
-    title,
-    company,
-    location: document.getElementById('f-location').value,
-    salary: document.getElementById('f-salary').value,
-    role: getSelectedChip('roleChips').toLowerCase(),
-    level: getSelectedChip('levelChips').toLowerCase(),
-    status: getSelectedChip('statusChips').toLowerCase(),
-    date: document.getElementById('f-date').value || new Date().toISOString().split('T')[0],
-    notes: document.getElementById('f-notes').value,
+function saveApp(){
+  const title=document.getElementById('f-title').value.trim();
+  const company=document.getElementById('f-company').value.trim();
+  if(!title||!company){toast('Fill in Company and Title!');return;}
+  const app={
+    id:Date.now(),title,company,
+    location:document.getElementById('f-loc').value,
+    salary:document.getElementById('f-salary').value,
+    role:getChip('cg-role').toLowerCase(),
+    level:getChip('cg-level').toLowerCase(),
+    status:getChip('cg-status').toLowerCase(),
+    date:document.getElementById('f-date').value||new Date().toISOString().split('T')[0],
+    url:document.getElementById('f-url').value,
+    notes:document.getElementById('f-notes').value,
   };
-
-  state.applications.push(app);
-  saveData(state);
-  closeModal();
-  document.getElementById('f-title').value = '';
-  document.getElementById('f-company').value = '';
-  document.getElementById('f-salary').value = '';
-  document.getElementById('f-notes').value = '';
-  refresh();
+  state.apps.push(app);save(state);closeModal();
+  ['f-title','f-company','f-salary','f-url','f-notes'].forEach(id=>{document.getElementById(id).value='';});
+  updateStats();renderJobs();renderJobs2();toast('Application saved ✓ 🎉');
 }
 
-// ── Fetch jobs (simulated) ─────────────────────────────────────
-function fetchNewJobs() {
-  document.getElementById('jobList').innerHTML = '<div class="empty-state">⟳ Fetching latest jobs...</div>';
-  setTimeout(() => {
-    // Simulate adding a new job
-    const newJob = {
-      id: Date.now(),
-      title: ["Data Analyst – Remote", "Junior ML Engineer", "Analytics Engineer", "Data Science Associate"][Math.floor(Math.random()*4)],
-      company: ["Hootsuite", "BuildDirect", "Ritual", "League", "Benevity"][Math.floor(Math.random()*5)],
-      logo: "N",
-      logoColor: "#" + Math.floor(Math.random()*0x888888 + 0x888888).toString(16),
-      location: ["Remote","Toronto, ON","Calgary, AB","Vancouver, BC"][Math.floor(Math.random()*4)],
-      type: Math.random() > 0.5 ? "remote" : "canada",
-      level: ["junior","fresh"][Math.floor(Math.random()*2)],
-      role: ["analyst","engineer","scientist"][Math.floor(Math.random()*3)],
-      salary: "$" + (60 + Math.floor(Math.random()*30)) + "K–$" + (85 + Math.floor(Math.random()*40)) + "K",
-      daysAgo: 0,
-    };
-    newJob.logo = newJob.company[0];
-    allJobs.unshift(newJob);
-    renderJobs();
-    updateStats();
-  }, 1200);
+// ── REFRESH JOBS ─────────────────────────────────────────────────────
+function fetchJobs(){
+  const opts=['Hootsuite','BuildDirect','Ritual','League','Benevity','Vidyard','Thinkific','AbCellera','D-Wave'];
+  const titles=['Junior Data Analyst','ML Ops Engineer','Analytics Intern→FTE','Data Science Associate','BI Developer – Entry'];
+  const newJ={
+    id:Date.now(),
+    title:titles[Math.floor(Math.random()*titles.length)],
+    company:opts[Math.floor(Math.random()*opts.length)],
+    logo:'N',lc:'#'+Math.floor(Math.random()*0x888888+0x444444).toString(16),
+    loc:['Remote','Toronto, ON','Vancouver, BC','Calgary, AB'][Math.floor(Math.random()*4)],
+    type:Math.random()>0.5?'remote':'canada',
+    lvl:['junior','fresh'][Math.floor(Math.random()*2)],
+    role:['analyst','engineer','scientist'][Math.floor(Math.random()*3)],
+    sal:'$'+(55+Math.floor(Math.random()*30))+'K–$'+(80+Math.floor(Math.random()*40))+'K',
+    age:0,tags:['Python','SQL','Analytics'],
+  };
+  newJ.logo=newJ.company[0];
+  JOBS.unshift(newJ);
+  document.getElementById('jobCountBadge').textContent=JOBS.length;
+  document.getElementById('s-avail').textContent=JOBS.length;
+  renderJobs();renderJobs2();toast('New job added! 🆕');
 }
 
-// ── Init ───────────────────────────────────────────────────────
-function refresh() {
-  renderJobs();
-  renderTimeline();
-  updateStats();
+// ── AI ASSISTANT ──────────────────────────────────────────────────────
+let aiThinking=false;
+async function sendAI(){
+  if(aiThinking)return;
+  const input=document.getElementById('aiInput');
+  const msg=input.value.trim();
+  if(!msg)return;
+  input.value='';
+  addMsg(msg,'user');
+  aiThinking=true;
+  document.getElementById('aiSendBtn').disabled=true;
+  const typingEl=addTyping();
+  try{
+    const systemPrompt=`You are an expert Data Science career advisor specializing in the Canadian job market and remote work. You know about companies like Shopify, Cohere, RBC, TD, Wealthsimple, TELUS, Bell, Manulife, and top Canadian tech companies. Help the user (a fresher or junior DS professional in Canada) with job search strategy, resume tips, interview prep, salary negotiation, and skill building. Keep responses concise, practical, and encouraging. Use emojis occasionally. Format well with short paragraphs.`;
+    const res=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514",
+        max_tokens:1000,
+        system:systemPrompt,
+        messages:[{role:"user",content:msg}]
+      })
+    });
+    const data=await res.json();
+    typingEl.remove();
+    const text=data.content?.map(c=>c.text||'').join('')||'Sorry, I had trouble responding. Please try again!';
+    addMsg(formatAIText(text),'ai',true);
+  }catch(e){
+    typingEl.remove();
+    addMsg('⚠️ Connection issue. Check your internet and try again.','ai');
+  }
+  aiThinking=false;
+  document.getElementById('aiSendBtn').disabled=false;
 }
 
-refresh();
+function aiAction(prompt){
+  document.getElementById('aiInput').value=prompt;
+  showPage('ai',null);
+  document.querySelector('.nav-item:nth-child(6)')?.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{if(n.textContent.includes('AI Assistant'))n.classList.add('active');});
+  sendAI();
+}
+
+function sendQuick(btn){
+  document.getElementById('aiInput').value=btn.textContent;
+  sendAI();
+}
+
+function addMsg(text,type,html=false){
+  const msgs=document.getElementById('aiMessages');
+  const div=document.createElement('div');
+  div.className='msg '+type;
+  if(html)div.innerHTML=text;else div.textContent=text;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+
+function addTyping(){
+  const msgs=document.getElementById('aiMessages');
+  const div=document.createElement('div');
+  div.className='msg ai msg-typing';
+  div.innerHTML='<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+
+function formatAIText(text){
+  return text
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g,'<em>$1</em>')
+    .replace(/`(.*?)`/g,'<span class="tag">$1</span>')
+    .replace(/\n\n/g,'<br><br>')
+    .replace(/\n/g,'<br>');
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────
+function fmtDate(d){
+  try{return new Date(d+'T12:00:00').toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'});}
+  catch{return d;}
+}
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────
+document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+document.getElementById('s-avail').textContent=JOBS.length;
+document.getElementById('jobCountBadge').textContent=JOBS.length;
+updateStats();
+renderJobs();
+renderJobs2();
+renderTimeline();
 </script>
 </body>
 </html>
